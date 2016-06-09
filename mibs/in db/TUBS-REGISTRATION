@@ -1,0 +1,38 @@
+TUBS-REGISTRATION DEFINITIONS ::= BEGIN
+
+-- @(#) $Id: TUBS-REGISTRATION,v 1.1 2009/05/31 06:30:35 martinc Exp $
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-IDENTITY, enterprises
+	FROM SNMPv2-SMI;
+
+tubs MODULE-IDENTITY
+    LAST-UPDATED "9702141023Z"
+    ORGANIZATION "TU Braunschweig"
+    CONTACT-INFO
+	"Juergen Schoenwaelder
+	 TU Braunschweig
+	 Bueltenweg 74/75
+	 38108 Braunschweig
+	 Germany
+
+	 Tel: +49 531 391 3249
+	 Fax: +49 531 391 5936
+	 E-mail: schoenw@ibr.cs.tu-bs.de"
+    DESCRIPTION
+	"The toplevel OID registration for the Technical University
+	 of Braunschweig, Germany."
+    REVISION	"9702141023Z"
+    DESCRIPTION
+	"The initial revision."
+    ::= { enterprises 1575 }
+
+ibr OBJECT-IDENTITY
+    STATUS	current
+    DESCRIPTION
+	"The subtree delegated to the Department of Operating Systems
+	 and Computer Networks (Institut fuer Betriebssysteme und
+	 Rechnerverbund)."
+    ::= { tubs 1 }
+
+END

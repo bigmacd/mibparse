@@ -1,0 +1,1980 @@
+-- ***************************************************************************
+-- * Cascade View MIB definitions                                            *
+-- *                                                                         *
+-- * Last Modification: June 7, 1994                                         *
+--
+-- Date	        Engineer        Description
+-- ****         ********        ***********
+-- 11-27-95     Bob Czarnecki   Added ATM PVC trap support.
+-- 08-15-95     Bob Czarnecki   Added more ISDN trap support.
+-- 04-12-95     Bob Czarnecki   Added ISDN trap support.
+-- 04-03-96	Joel & David 	Added SVC trap support.
+-- 09-23-96     Sheena Gu	Added multipnt MPVC trap support. 
+-- ***************************************************************************
+
+
+CASCADEVIEW-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    enterprises, IpAddress, Counter,
+    Gauge, TimeTicks
+        FROM RFC1155-SMI
+    DisplayString, ifInErrors, egpNeighAddr
+        FROM RFC1213-MIB
+    OBJECT-TYPE
+        FROM RFC-1212
+    TRAP-TYPE
+        FROM RFC-1215
+    mptDomain, mptPtNode, mptPtOperStatus
+	FROM CASCADE-MPT-MIB
+    diskDirectory, diskPercentageUsed, diskSeverity, 
+    thresholdValue, thresholdSeverity
+        FROM CASCADE-ACCTSERVER-MIB
+    cascade, cascview, pportSlotId, pportId, nodeFanIndex, nodeSwFilename, 
+        nodePrFilename, lportCongestRate, nodeDiagNonFatalTime,
+        nodeDiagNonFatalErrMajor, nodeDiagNonFatalErrMinor, nodeConsoleIndex,
+        nodeUserName, nodeConsoleUptime, cardPhysicalSlotId,
+        cardDiagNonFatalTime, cardDiagNonFatalErrMajor, nodeDiagNonFatalStr,
+        lportErrorThreshold, lportCongestRateThresh,
+	    chanSlotId, chanPortId, chanId, 
+        cardDiagNonFatalErrMinor, cktFailPort, cktFailNode,
+        pportDS0FarendDS0InLpbk, nodeFileTransferRequest, pportSetClkBkup
+        svcAtmConfigQ93bLastCauseTx, svcAtmConfigQ93bLastCauseRx,
+	    cktSvcCalledParty, cktSvcCallingParty, pportPMTcaId, 
+        lportIfIndex, cktNdcIfIndex, cktNdcSrcDlci, lportSevereCongestStatus,
+        cktNdcInDiscardClp0Cells, cktNdcInDiscardClp0CellThresh,
+        cktNdcInDiscardClp01Cells, cktNdcInDiscardClp01CellThresh,
+	    cktLeafSrcIfIndex, cktLeafAtmVPI, cktLeafAtmVCI, cktLeafEndpointIndex,
+        cktLeafOperStatus, cktLeafFailReason, cktLeafFailNode, cktLeafFailPort,
+        atmacctControl, atmacctASAddressPri, atmacctASAddressSec,
+        atmacctASControl, atmacctSwASCommsFailures, atmacctUsageRecCrFailures,
+        atmacctLportSvcControl, atmacctLportIfIndex, 
+        lportSlotId, lportPportId, lportId, atmacctOperState, atmacctASCommsState, 
+        svcAddrAddress, svcPrefixPrefix, svcNodePrefixPrefix, 
+        isdnCallerIDAddr, dvcCktGrpDialedE164Addr, 
+        nodeBulkStatsCollectorAddress, nodeBulkSwAPCommsFailures, 
+        nodeAdminStatus, nodeOperatingStatus, nodeNtpOffset,
+	lportDataRate, lportVAvailBw,
+        cardLogicalSlotId, subcardPhysicalSubSlotId,
+        subcardOperType, subcardOperStatus
+
+    FROM CASCADE-MIB;
+
+--  This MIB module uses the extended OBJECT-TYPE macro as defined in RFC 1212
+
+--  Title
+
+cvNodeName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Name of the switch."
+    ::= { cascview 1 }
+
+cvLPortName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Name of the logical port."
+    ::= { cascview 2 }
+
+cvTrunkName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Name of the trunk."
+    ::= { cascview 3 }
+
+cvCircuitName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Name of the circuit."
+    ::= { cascview 4 }
+
+cvPortTypeStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the port type."
+    ::= { cascview 5 }
+
+cvStatusStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the Status."
+    ::= { cascview 6 }
+
+cvFanStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of Fan Index."
+    ::= { cascview 7 }
+
+cvReasonStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the reason."
+    ::= { cascview 8 }
+
+cvErrorStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the error."
+    ::= { cascview 9 }
+
+cvErrorSrcStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the error source."
+    ::= { cascview 10 }
+
+cvIfOrSlotId OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The interface/slot id of the link/IOP doing down or
+                 link goes up."
+    ::= { cascview 11 }
+
+cvConfInterfaceStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the configured interface."
+    ::= { cascview 12 }
+
+cvActualInterfaceStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the Actual interface."
+    ::= { cascview 13 }
+
+cvConfPortTypeStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the configured port type."
+    ::= { cascview 14 }
+
+cvListCircuitNames OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A list of circuit names."
+    ::= { cascview 15 }
+
+cvNodeUserFrom OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The IP address or Console from which the user logged in." 
+    ::= { cascview 16 }
+
+cvNodeBillingServiceStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the node's billing service type."
+    ::= { cascview 17 }
+
+cvNodeBillingStatusStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the node's billing status."
+    ::= { cascview 18 }
+
+cvNodeBillingAPAddressStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The adjunct processor IP address." 
+    ::= { cascview 19 }
+
+cvLportBillingServiceStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the lport's billing service type."
+    ::= { cascview 20 }
+
+cvLportBillingStatusStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the lport's billing status."
+    ::= { cascview 21 }
+
+cvListChannels OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"A textual description of the channel list."
+	::= { cascview 22 }
+
+cvISDNSrcAddr OBJECT-TYPE
+	SYNTAX DisplayString
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The address of the source of the ISDN connection."
+	::= { cascview 23 }
+
+cvISDNDestAddr OBJECT-TYPE
+	SYNTAX DisplayString
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The address of the destination of the ISDN connection."
+	::= { cascview 24 }
+
+cvESFLinkStatusStr OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "A textual description of the ESF Link Status."
+        ::= { cascview 25 }
+
+cvCktLeafOperStatusStr OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "A textual description of the entire leaf PVC."
+        ::= { cascview 26 }
+
+cvCktLeafFailReasonStr OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "A textual description of reason for PVC establishment failure"
+        ::= { cascview 27 }
+
+cvCardAdminTypeStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the configured card type."
+    ::= { cascview 28 }
+
+cvCardOperTypeStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the actual card type."
+    ::= { cascview 29 }
+
+cvCktSvcCause OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A textual description of the SVC failure cause."
+    ::= { cascview 30 }
+
+cvPportPMTcaOid OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "identifies the the most recently declared pport
+                 threshold crossing alert"
+        ::= { cascview 31 }
+
+cvNodeNtpAddressStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The reference time server IP address."
+    ::= { cascview 32 }
+ 
+cvAtmacctASAddressPriStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The IP Address of the primary Accounting Processor."
+    ::= { cascview 33 }
+
+cvAtmacctASAddressSecStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The IP Address of the secondary Accounting Processor."
+    ::= { cascview 34 }
+
+cvNodeTimeStr OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The clock time."
+    ::= { cascview 35 }
+ 
+cvBundleName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Name of the logical port."
+    ::= { cascview 36 }
+
+cvSubcardOperType OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The actual subcard type."
+        ::= { cascview 37 }
+
+cvSubcardOperStatus OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The current status of this subcard."
+        ::= { cascview 38 }
+
+
+cvSubcardPhysicalSubSlotId OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "The physical subslot number of this subcard."
+        ::= { cascview 39 }
+
+
+
+--  The Traps Group
+--
+--  Definitions for Cascade View Specific Traps.
+--
+
+cvColdStart TRAP-TYPE
+        ENTERPRISE  cascview
+        VARIABLES   { cvNodeName }
+        DESCRIPTION
+                  "A coldStart trap signifies that the sending
+                  protocol entity is reinitializing itself such
+                  that the agent's configuration or the protocol
+                  entity implementation may be altered."
+        ::= 10000
+
+cvWarmStart TRAP-TYPE
+        ENTERPRISE  cascview
+        VARIABLES   { cvNodeName }
+        DESCRIPTION
+                  "A warmStart trap signifies that the sending
+                  protocol entity is reinitializing itself such
+                  that neither the agent configuration nor the
+                  protocol entity implementation is altered."
+        ::= 10001
+
+cvLinkDown TRAP-TYPE
+        ENTERPRISE  cascview
+        VARIABLES   { cvNodeName, cvLPortName }
+        DESCRIPTION
+                  "A linkDown trap signifies that the sending
+                  protocol entity recognizes a failure in one of
+                  the communication links represented in the
+                  agent's configuration."
+        ::= 10002
+
+cvLinkUp TRAP-TYPE
+        ENTERPRISE  cascview
+        VARIABLES   { cvNodeName, cvLPortName }
+        DESCRIPTION
+                  "A linkUp trap signifies that the sending
+                  protocol entity recognizes that one of the
+                  communication links represented in the agent's
+                  configuration has come up."
+        ::= 10003
+
+cvAuthenticationFailure TRAP-TYPE
+        ENTERPRISE  cascview
+        VARIABLES   { cvNodeName }
+        DESCRIPTION
+                  "An authenticationFailure trap signifies that
+                  the sending protocol entity is the addressee
+                  of a protocol message that is not properly
+                  authenticated.  While implementations of the
+                  SNMP must be capable of generating this trap,
+                  they must also be capable of suppressing the
+                  emission of such traps via an implementation-
+                  specific mechanism."
+        ::= 10004
+
+cvEgpNeighborLoss TRAP-TYPE
+        ENTERPRISE  cascview
+        VARIABLES   { cvNodeName, egpNeighAddr }
+        DESCRIPTION
+                  "An egpNeighborLoss trap signifies that an EGP
+                  neighbor for whom the sending protocol entity
+                  was an EGP peer has been marked down and the
+                  peer relationship no longer obtains."
+        ::= 10005
+
+cvNodeReachable TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName }
+    DESCRIPTION
+        "This trap, generated by Cascade View, indicates the node is 
+                 reachable."
+    ::= 10006
+
+cvNodeUnreachable TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName }
+    DESCRIPTION
+        "This trap, generated by Cascade View, indicates the node is 
+                 unreachable."
+    ::= 10007
+
+cvCktGrpLportDown TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cvLPortName, pportSlotId, pportId,
+                     cvListCircuitNames }
+        DESCRIPTION
+                "This trap indicates a logical port goes down and 
+         a list of circuits go down also.
+
+                 The original cascade switch trap is cktGrpStatusChange. 
+                 For each bit map entry in cktGrpStatusChange trap, a new
+         trap will be generated."
+        ::= 10008
+
+cvCktGrpLportUp TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cvLPortName, pportSlotId, pportId,
+                     cvListCircuitNames }
+        DESCRIPTION
+                "This trap indicates a logical port goes up and 
+                 a list of circuits go up also.
+
+                 The original cascade switch trap is cktGrpStatusChange.
+                 For each bit map entry in cktGrpStatusChange trap, a new
+         trap will be generated."
+        ::= 10009
+
+cvCktGrpTrunkDown TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cvTrunkName, pportSlotId, pportId,
+                     cvListCircuitNames }
+        DESCRIPTION
+                "This trap indicates a trunk goes down and 
+                 a list of circuits go down also.
+
+                 The original cascade switch trap is cktGrpStatusChange.
+                 For each bit map entry in cktGrpStatusChange trap, a new
+         trap will be generated."
+        ::= 10010
+
+cvCktGrpIopDown TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cardPhysicalSlotId, pportId,
+                     cvListCircuitNames }
+        DESCRIPTION
+                "This trap indicates an IOP in specified slot goes down
+                 and a list of circuits go down also.
+
+                 The original cascade switch trap is cktGrpStatusChange.
+                 For each bit map entry in cktGrpStatusChange trap, a new
+         trap will be generated."
+        ::= 10011
+
+cvNodeBoardInserted TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, pportSlotId, cvPortTypeStr }
+    DESCRIPTION
+        "This trap indicates that a board has been inserted into
+         the indicated slot."
+    ::= 1
+
+cvNodeBoardPulled TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, pportSlotId, cvPortTypeStr }
+    DESCRIPTION
+        "This trap indicates that a board has been pulled out from
+        the indicated slot."
+    ::= 2
+
+cvNodeBoardMismatch TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, pportSlotId, cvPortTypeStr, cvConfPortTypeStr }
+    DESCRIPTION
+        "This trap indicates that the actual board type on the
+        indicated slot is inconsistent with what is configured."
+    ::= 3
+
+cvNodePsAStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvStatusStr }
+    DESCRIPTION
+        "This trap indicates that the power supply 1 has changed state
+        (toggled between up and down states)."
+    ::= 4
+
+cvNodePsBStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvStatusStr }
+    DESCRIPTION
+        "This trap indicates that the power supply 2 has changed state
+        (toggled between up and down states)."
+    ::= 5
+
+cvNodeFanStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, nodeFanIndex, cvStatusStr }
+    DESCRIPTION
+        "This trap indicates that a fan has changed state 
+        (toggled between up and down states)."
+    ::= 6
+
+cvNodeSwDownloadComplete TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, nodeSwFilename }
+    DESCRIPTION
+        "This trap indicates that a software download was complete."
+    ::= 7
+
+cvNodeSwDownloadFailed TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, nodeSwFilename }
+    DESCRIPTION
+        "This trap indicates that a software download failed."
+    ::= 8
+
+cvNodePrDownloadComplete TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, nodePrFilename }
+    DESCRIPTION
+        "This trap indicates that a PRAM download was complete."
+    ::= 9
+
+cvNodePrDownloadFailed TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, nodePrFilename }
+    DESCRIPTION
+        "This trap indicates that a PRAM download failed."
+    ::= 10
+
+cvNodeTracefull TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName }
+    DESCRIPTION
+        "This trap indicates that the node trace table was full and 
+        has been copied to a TFTP buffer awaiting to be xfered to the
+        NMS."
+    ::= 11
+
+cvNodeDiagLogfull TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName }
+    DESCRIPTION
+        "This trap indicates that the diagnostic log table was full 
+        and has been copied to a TFTP buffer awaiting to be xfered to 
+        the NMS."
+    ::= 12
+
+cvNodeFlashMemErr TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName }
+    DESCRIPTION
+        "This trap indicates that a checksum or CRC-32 error occurred
+        in Flash."
+    ::= 13
+
+cvNodePramErr TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName }
+    DESCRIPTION
+        "This trap indicates that a checksum error or battery problem
+        occurred in PRAM."
+    ::= 14
+
+cvNodeRamErr TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName }
+    DESCRIPTION
+        "This trap indicates that an I/O error occurred in DRAM or
+        SRAM."
+    ::= 15
+
+cvNodeInternalErr TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName }
+    DESCRIPTION
+        "This trap indicates that a fatal internal hardware or software
+        error encountered and system needs to be re-booted."
+    ::= 16
+
+cvPportStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, pportSlotId, pportId, cvStatusStr, cvReasonStr }
+    DESCRIPTION 
+        "This trap indicates that the indicated physical port has
+        changed state."
+    ::= 17
+
+cvLPortCongests TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, cvLPortName , lportCongestRate,
+                    lportCongestRateThresh }
+    DESCRIPTION 
+        "This trap indicates that the rate of entering severely and
+        absolutely congested state on the indicated logical port 
+        has exceeded the threshold."
+    ::= 18
+
+cvTrkStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, cvTrunkName, cvStatusStr }
+    DESCRIPTION 
+        "This trap indicates that the trunk associated with the
+        indicated logical port has changed state."
+    ::= 19
+
+cvCktDlciStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvCircuitName, cvStatusStr, cvReasonStr, cktFailNode, cktFailPort }
+    DESCRIPTION
+        "This trap indicates that the user-to-user PVC state has been
+        changed for this virtual circuit. It has either been created
+        or invalidated, or has toggled between the active and inactive
+        states."
+    ::= 20
+
+cvCktDlciReroute TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvCircuitName }
+    DESCRIPTION
+        "This trap indicates that a PVC has been re-routed."
+    ::= 21
+
+cvPportInterfaceMismatch TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, pportSlotId, pportId, cvConfInterfaceStr, cvActualInterfaceStr }
+    DESCRIPTION
+        "This trap indicates the actual physical interface is
+        different than the configured physical interface."
+    ::= 22
+
+cvLPortErrorExceedThreshold TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvLPortName, ifInErrors, lportErrorThreshold }
+    DESCRIPTION
+        "This trap indicates the frame errors per minute on this
+        lport exceeded the threshold."
+    ::= 23
+
+cvNodeErrorReport TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvErrorSrcStr, nodeDiagNonFatalTime, nodeDiagNonFatalErrMajor, nodeDiagNonFatalErrMinor, nodeDiagNonFatalStr }
+    DESCRIPTION
+        "A component in the switch discovered a non-fatal error
+        condition."
+    ::= 24
+
+cvCktGrpStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvIfOrSlotId, cvReasonStr, cvStatusStr }
+    DESCRIPTION
+        "Circuits on interfaces go up or down."
+    ::= 25
+
+cvNodeUserLogin TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, nodeConsoleIndex, nodeUserName, cvNodeUserFrom, nodeConsoleUptime }
+    DESCRIPTION
+        "An user has logged in STDX through either serial console or telnet."
+    ::= 26
+
+cvNodeUserLogout TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, nodeConsoleIndex, nodeUserName, cvNodeUserFrom, nodeConsoleUptime }
+    DESCRIPTION
+        "An user has logged out."
+    ::= 27
+
+cvCardUp TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cardPhysicalSlotId }
+    DESCRIPTION
+        "This trap indicates that an intelligent card has transitioned
+        to an ACTIVE state."
+    ::= 28
+
+cvCardDown TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cardPhysicalSlotId }
+    DESCRIPTION
+        "This trap indicates that an intelligent card has transitioned
+        to a NON-ACTIVE state."
+    ::= 29
+
+cvLnkStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, cvLPortName, cvStatusStr}
+    DESCRIPTION 
+        "This trap indicates that the link status (Link protocol)
+                 associated with the indicated logical port has changed state."
+    ::= 30
+
+cvLnkSmdsHbpNaTca TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, cvLPortName }
+    DESCRIPTION 
+        "This trap indicates that non-Ack count for SMDS DXI heartbeat
+         poll exceeds the threshold. The non-Ack count is reset every
+         15 minutes."
+    ::= 31
+
+cvLnkSmdsDiscardTca TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, cvLPortName }
+    DESCRIPTION 
+        "This trap indicates that Total Discard packet count for SMDS 
+        packet exceedes the threshold. ( This trap has not been implemented 
+        in this release yet )."
+    ::= 32
+
+cvCardRedundSwitchOver TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, cardPhysicalSlotId }
+    DESCRIPTION 
+        "This trap indicates that the card in the specified slot has shot its 
+        active partner and has become the active card of the pair."
+    ::= 33
+
+cvCardErrorReport TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvErrorSrcStr, cardDiagNonFatalTime,
+                     cardDiagNonFatalErrMajor, cardDiagNonFatalErrMinor,
+                     cvErrorStr, cardPhysicalSlotId }
+    DESCRIPTION
+        "The specified card discovered a non-fatal error condition."
+    ::= 34
+cvSvcSetup TRAP-TYPE
+	ENTERPRISE cascview
+	VARIABLES { cvNodeName, cvCircuitName , 
+		    cktSvcCallingParty,cktSvcCalledParty }
+	DESCRIPTION 
+		"This trap is generated by the ingress switch whenever 
+		 a FR Svc is setup or cleared."
+	::= 35
+cvSvcClearing TRAP-TYPE
+	ENTERPRISE cascview
+	VARIABLES { cvNodeName }
+	DESCRIPTION
+                "Reserved for Frame Relay SVC."
+	::= 36
+
+cvSvcFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cktSvcCallingParty, cktSvcCalledParty, cvCktSvcCause }
+        DESCRIPTION
+                "This trap is generated by the ingress switch whenever a 
+                 Fram Relay svc setup fails. cvCktSvcCause contains the cause
+                 number."
+        ::= 37
+
+cvTrkBuAttempt TRAP-TYPE
+        ENTERPRISE cascview 
+        VARIABLES { cvNodeName, cvLPortName}
+        DESCRIPTION
+                "This trap indicates that an attempt to establish the backup
+                 trunk associated with the indicated logical port is being
+                 made."
+        ::= 38
+ 
+ 
+cvTrkBuFailure TRAP-TYPE
+        ENTERPRISE cascview 
+        VARIABLES { cvNodeName, cvLPortName, cvReasonStr}
+        DESCRIPTION
+                "This trap indicates that the primary trunk associated
+                 with the indicated logical port has not been backed
+                 up or the backup trunk associated with the indicated
+                 logical port has not been restored.  The reason for
+                 failure is provided.  The lportBuFailReason indicates
+                 the trunk type as follows:
+ 
+                   lportBuFailReson             Trunk Type
+                     buTrkNotDef                  primary trunk
+                     buTrkNotEstab                backup trunk"
+        ::= 39
+ 
+ 
+cvTrkBuReleased TRAP-TYPE
+        ENTERPRISE cascview 
+        VARIABLES { cvNodeName, cvLPortName}
+        DESCRIPTION
+                "This trap indicates that the backup trunk associated with the
+                 indicated logical port has been released."
+        ::= 40
+
+cvPportDS0LoopUpChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, pportSlotId, pportId, cvListChannels }
+        DESCRIPTION
+                "This trap indicates one or more DS0's have gone into
+            loopback. cvListChannels reports the DS0's that have
+            gone into loopback."
+        ::= 41
+ 
+cvPportDS0LoopDownChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, pportSlotId, pportId, cvListChannels }
+        DESCRIPTION
+                "This trap indicates one or more DS0's have gone out of
+            loopback. cvListChannels reports the DS0's that have
+            gone out of loopback."
+        ::= 42
+
+cvLportISDNCallRej TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cvLPortName, cvISDNSrcAddr, cvISDNDestAddr, cvReasonStr }
+        DESCRIPTION
+                "This trap indicates that a call has been rejected due  
+		either the inability to authenticate the call or lack of
+		B-channel pool resources."
+        ::= 43
+
+cvPportdsx3LoopChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, cvStatusStr }
+        DESCRIPTION
+                "This trap indicates when the DS3 or E3 has changed its current
+                 loopback state."
+        ::= 44
+
+cvPportds1LoopChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, cvStatusStr }
+        DESCRIPTION
+                "This trap indicates when the DS1 has changed its current
+                 loopback state."
+        ::= 45
+
+cvPportExtClockBackup TRAP-TYPE
+        ENTERPRISE cascview 
+        VARIABLES { cvNodeName, pportSlotId, pportId, pportSetClkBkup }
+        DESCRIPTION
+                "This trap indicates that a pport has lost the external clock
+                 source and is switching over to the backup clock selected."
+        ::= 46
+ 
+ 
+cvPportExtClockRestore TRAP-TYPE
+        ENTERPRISE cascview 
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "This trap indicates that external clock is recovered and the
+                pport will switch back to external clock."
+        ::= 47
+ 
+cvPportExtClkCapabilityMismatch TRAP-TYPE
+        ENTERPRISE cascview 
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "This trap indicates the port on this card (and the card
+                 itself) is not capable of running external clock."
+        ::= 48
+ 
+cvNodeFileTransferReport TRAP-TYPE
+        ENTERPRISE cascview 
+        VARIABLES  { cvNodeName, nodeFileTransferRequest, cvStatusStr} 
+        DESCRIPTION
+             "Reporting the outcome of a previous file transfer request.
+              nodeFileTransferRequest specifies the request and
+              nodeFileTransferStatus gives the outcome."
+        ::= 49
+
+cvNodeBillingUsageRecOvflWarning TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, cvNodeBillingServiceStr }
+    DESCRIPTION 
+        "Warning that a usage record counter-value overflow condition
+        has occurred while aggregating usage data recently collected
+        from one or more IOPs. An overflow condition exists when an 
+        attempt was made to update a usage record counter, but such an 
+        update would have overflowed the counter.  In this case, the 
+        usage record is closed and a new one is opened, if there is 
+        sufficient space in the service's aggregated usage data store."
+    ::= 50
+
+cvNodeBillingUsageRecCrFailed TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, cvNodeBillingServiceStr }
+    DESCRIPTION 
+        "Notification that a usage record could not be created."
+    ::= 51
+
+cvNodeBillingStateChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, cvNodeBillingServiceStr, cvNodeBillingStatusStr }
+    DESCRIPTION 
+        "Notification that billing has been enabled or disabled on the
+        switch. This trap is generated at switch boot or when the 
+        value of the nodeBilling object is modified."
+    ::= 52
+
+cvLportBillingStateChange TRAP-TYPE
+    ENTERPRISE cascview 
+    VARIABLES { cvNodeName, cvLportBillingServiceStr, cvLportBillingStatusStr, cvLPortName }
+    DESCRIPTION 
+        "
+                Notification that billing has been enabled or disabled on a 
+                particular logical port. This trap is generated when the
+                value of the lportBilling is modified for a particular port;
+                this trap is NOT generated when the global nodeBilling is 
+                modified or when the switch is booted. 
+        "
+    ::= 53
+
+cvNodeBillingSwAPCommsFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvNodeBillingAPAddressStr }
+        DESCRIPTION
+                "
+                Notification that switch to Adjunct Processor communication
+                has failed and that a usage file transfer has failed to
+                complete.
+                "
+        ::= 54
+
+cvSvcAtmFailedCall TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, svcAtmConfigQ93bLastCauseTx,
+                    svcAtmConfigQ93bLastCauseRx }
+        DESCRIPTION
+                "Notification that one or more SVC call failures have been logged
+                 in the svcAtmFailedCallTable."
+        ::= 55
+ 
+cvSvcAtmSigStatusChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName, cvStatusStr }
+        DESCRIPTION
+                "Notification that the status of the ATM signaling function
+                 has changed on the port."
+        ::= 56
+
+
+-- CH_CLKSRC begin
+
+cvlportCBRLineDataError TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName, cvErrorStr }
+        DESCRIPTION
+                "
+                This trap indicates the error state of the CBR lport.
+                "
+        ::= 57
+
+cvclkSourceSwitch TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, cvStatusStr }
+        DESCRIPTION
+                "
+                This trap indicates that the CBR port switched
+				its clock mode. 
+                "
+        ::= 58
+
+cvclkSourceSync TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, nodeRefClockActiveSrc }
+        DESCRIPTION
+                "
+                This trap indicates that the clock generator unit
+				synchronized to a reference clock.
+				The original trap is the clkSourceFailure trap.
+                "
+        ::= 9900
+
+cvclkSourceFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "
+                This trap indicates that the clock generator unit
+				switched to holdover mode.
+                "
+        ::= 59
+
+-- CH_CLKSRC end
+
+cvLportSmdsSip3SaNotFoundTca TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that the number of Sa Not Found
+                violations exceeded the specified Smds pdu violation
+                threshold for the logical port.
+                "
+                ::= 60
+ 
+cvLportSmdsSip3SaDaOnSamePortTca TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that the number of Sa Da On Same Port
+                violations exceeded the specified Smds pdu violation
+                threshold for the logical port.
+                "
+                ::= 61
+ 
+cvLportSmdsSip3DstGaNotFoundTca TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that the number of Dst Ga Not Found
+                violations exceeded the specified Smds pdu violation
+                threshold for the logical port.
+                "
+                ::= 62
+
+cvLportSmdsSip3DstIaScrnFailTca TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that the number of Dst Ia Scrn Fail
+                violations exceeded the specified Smds pdu violation
+                threshold for the logical port.
+                "
+                ::= 63
+ 
+cvLportSmdsSip3SaValFailTca TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that the number of Sa Val Fail
+                violations exceeded the specified Smds pdu violation
+                threshold for the logical port.
+                "
+                ::= 64
+
+cvLportSmdsSip3DstIaNotFoundTca TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that the number of Dst Ia Not Found
+                violations exceeded the specified Smds pdu violation
+                threshold for the logical port.
+                "
+                ::= 65
+ 
+cvLportSmdsSip3SrcIaScrnFailTca TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that the number of Src Ia Scrn Fail
+                violations exceeded the specified Smds pdu violation
+                threshold for the logical port.
+                "
+                ::= 66
+ 
+cvLportSmdsSip3DstGaScrnFailTca TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that the number of Dst Ga Scrn Fail
+                violations exceeded the specified Smds pdu violation
+                threshold for the logical port.
+                "
+                ::= 67
+ 
+cvLportSmdsDxi2LinkIdInvalidTca TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that the number of Link Id Invalid
+                violations exceeded the specified Smds pdu violation
+                threshold for the logical port.
+                "
+                ::= 68
+
+cvNodePrimarySyncReferenceChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvStatusStr }
+        DESCRIPTION
+                "Notification that the Primary Synchronization Reference
+                 operational state has changed."
+        ::= 69
+ 
+cvNodeSecondarySyncReferenceChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvStatusStr }
+        DESCRIPTION
+                "Notification that the Secondary Synchronization Reference
+                 operational state has changed."
+        ::= 70
+ 
+cvNodeExternalClock1Change TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvStatusStr }
+        DESCRIPTION
+                "Notification that the External Reference Clock 1
+                 operational state has changed."
+        ::= 71
+
+cvNodeExternalClock2Change TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvStatusStr }
+        DESCRIPTION
+                "Notification that the External Reference Clock 2
+                 operational state has changed."
+        ::= 72
+ 
+cvNodePortReference1Change TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvStatusStr }
+        DESCRIPTION
+                "Notification that the Port Reference Clock 1
+                 operational state has changed."
+        ::= 73
+ 
+cvNodePortReference2Change TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvStatusStr }
+        DESCRIPTION
+                "Notification that the Port Reference Clock 2
+                 operational state has changed."
+        ::= 74
+
+cvPportDS0InitiateLpbkFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, pportDS0FarendDS0InLpbk }
+        DESCRIPTION
+                "This trap indicates that the DS0 requested to be
+        set into far end loopback has failed to do so."
+        ::= 75
+ 
+cvPportDS0InitiateLpbkSuccess TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, pportDS0FarendDS0InLpbk }
+        DESCRIPTION
+                "This trap indicates that the DS0 requested to be
+        set into far end loopback has succeeded."
+        ::= 76
+
+
+cvLportPPPNegotiationFail TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cvLPortName, cvReasonStr }
+        DESCRIPTION
+                "This trap indicates that PPP negotiation has failed."
+        ::= 77
+
+cvCktAtmStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvCircuitName, cvStatusStr, cvReasonStr, cktFailNode, cktFailPort }
+    DESCRIPTION
+        "This trap indicates that the user-to-user ATM PVC state has been
+        changed for this virtual circuit. It has either been created
+        or invalidated, or has toggled between the active and inactive
+        states."
+    ::= 78
+
+cvCktAtmReroute TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvCircuitName }
+    DESCRIPTION
+        "This trap indicates that an ATM PVC has been re-routed."
+    ::= 79
+
+cvCardTransmitClockStatusChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cardPhysicalSlotId, cvStatusStr }
+        DESCRIPTION
+               "This trap indicates that the IOM transmit clock synchronization
+ status has changed."
+        ::= 80
+ 
+cvCardSystemPrimaryClockStatusChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cardPhysicalSlotId, cvStatusStr }
+        DESCRIPTION
+                "This trap indicates that the IOM system primary clock reference
+status has changed."
+        ::= 81
+ 
+cvCardSystemSecondaryClockStatusChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cardPhysicalSlotId, cvStatusStr }
+        DESCRIPTION
+                "This trap indicates that the IOM system primary clock reference
+status has changed."
+        ::= 82
+
+CVnodeBillingUsageDataReplnFailWarning TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName,cvNodeBillingServiceStr }
+        DESCRIPTION
+                "Warning that the billing system manager on the active
+                 CP+ failed to write the contents of the usage data
+                 store on the redundant CP+."
+        ::= 83
+
+CVnodeBillingUsageDataRecoveryFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName,cvNodeBillingServiceStr }
+        DESCRIPTION
+                "Notification that the billing system manager on the
+                 active CP+ failed to recover the contents of the usage
+                 data store on boot."
+        ::= 84
+
+CVnodeBillingUsageDataDiscardedOnBoot TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName,cvNodeBillingServiceStr }
+        DESCRIPTION
+                "Notification that the billing system manager on the
+                 active CP+ discarded the usage data recovered on boot
+                 because they are too old. Currently, if the data that
+                 are recovered are older than 24 hours, they are
+                 discarded."
+        ::= 85
+
+cvLportAuthenticationFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName, cvReasonStr }
+        DESCRIPTION
+                "This trap indicates a user authentication failure."
+        ::= 86
+
+cvLportMPBundleFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName, cvReasonStr }
+        DESCRIPTION
+                "This trap indicates a PPP Multilink Protocol Bundle failure."
+        ::= 87
+ 
+cvLportBAPCallFailureStatus TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName, cvReasonStr }
+        DESCRIPTION
+                "This trap indicates a PPP Bandwidth Allocation Protocol
+                 connection failure. It is the Call-Status-Code (Q.931 cause
+                 code) sent from the calling system."
+        ::= 88
+
+cvLportISDNPPPNegotiationFail TRAP-TYPE
+	ENTERPRISE cascview
+	VARIABLES {  cvNodeName, cvLPortName, cvISDNSrcAddr, cvISDNDestAddr, cvReasonStr }
+	DESCRIPTION
+		"This trap indicates that ISDN/PPP Negotiations has failed."
+	::= 89
+
+cvLportISDNAuthenticationFailure TRAP-TYPE
+	ENTERPRISE cascview
+	VARIABLES {  cvNodeName, cvLPortName, cvISDNSrcAddr, cvISDNDestAddr, cvReasonStr }
+	DESCRIPTION
+		"This trap indicates a user ISDN authentication failure."
+	::= 90
+
+cvLportISDNMPBundleFailure TRAP-TYPE
+	ENTERPRISE cascview
+        VARIABLES {  cvNodeName, cvLPortName, cvISDNSrcAddr, cvISDNDestAddr, cvReasonStr }
+	DESCRIPTION
+		"This trap indicates a ISDN/PPP Multilink Protocol Bundle
+		 failure."
+	::= 91
+
+cvLportISDNBAPCallFailureStatus TRAP-TYPE
+	ENTERPRISE cascview
+        VARIABLES {  cvNodeName, cvLPortName, cvISDNSrcAddr, cvISDNDestAddr, cvReasonStr }
+	DESCRIPTION
+		"This trap indicates an ISDN/PPP Bandwidth Allocation Protocol
+		 connection failure. It is the Call-Status-Code (Q.931 cause
+		 code) sent from the calling system."
+	::= 92
+
+cvIsdnCallerRejected TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, lportIfIndex, lportSlotId, isdnCallerIDAddr,
+                    dvcCktGrpDialedE164Addr }
+        DESCRIPTION
+                "This trap represents a call from a caller
+                 who is not authorised to access the circuit group."
+        ::= 93
+
+cvCugAddrMaxCugsExceeded TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, svcAddrAddress } 
+        DESCRIPTION
+                "Indicates a run-time configuration error on the
+                 number of CUGs allowed per address."
+        ::= 94
+
+cvCugPrefixMaxCugsExceeded TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, svcPrefixPrefix } 
+        DESCRIPTION
+                "Indicates a run-time configuration error on the
+                 number of CUGs allowed per prefix."
+        ::= 95
+
+cvCugNodePrefixMaxCugsExceeded TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, svcNodePrefixPrefix } 
+        DESCRIPTION
+                "Indicates a run-time configuration error on the
+                 number of CUGs allowed per node prefix."
+        ::= 96
+
+cvChanDs1LoopChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, chanSlotId, chanPortId, chanId, cvStatusStr }
+        DESCRIPTION
+                "This trap indicates when the DS1 has changed its current
+                 loopback state."
+        ::= 97
+
+cvNodeBillingCallRecordSendFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvNodeBillingStatusStr }
+        DESCRIPTION
+        "Notification that switch to Accounting Server communication
+        has failed and that a usage file transfer has failed to
+        complete."
+        ::= 98
+
+cvLportNtmSevereCongestStatusChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, lportIfIndex, lportSevereCongestStatus }
+        DESCRIPTION
+                "This trap indicates that there is a change of congestion status
+                 on a logical port on an IOM."
+        ::= 99
+
+cvCktNdcThreshCrossAlarmClp0 TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cktNdcIfIndex, cktNdcSrcDlci,
+                    cktNdcInDiscardClp0Cells, cktNdcInDiscardClp0CellThresh }
+        DESCRIPTION
+                "This trap is a Network Data Collection Threshold Crossing Alarm
+                 for the number of CLP0 cells discarded in a PVC on an IOM.
+                 It is generated not more than once within the 15-minute NDC
+                 measurement interval."
+        ::= 100
+
+cvCktNdcThreshCrossAlarmClp01 TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cktNdcIfIndex, cktNdcSrcDlci,
+                    cktNdcInDiscardClp01Cells, cktNdcInDiscardClp01CellThresh }
+        DESCRIPTION
+                "This trap is a Network Data Collection Threshold Crossing Alarm
+                 for the number of CLP0+1 cells discarded in a PVC on an IOM.
+                 It is generated not more than once within the 15-minute NDC
+                 measurement interval."
+        ::= 101
+
+cvNodeAuthenticationFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cvLPortName, cvReasonStr }
+        DESCRIPTION
+                "This trap indicates a user console login authentication
+                 failure."
+        ::= 102
+
+atmacctStateChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, atmacctControl }
+        DESCRIPTION
+                "Notification that ATM accounting has been enabled or disabled
+                on the switch. This trap is generated at switch boot or when
+                the value of the atmacctControl object is modified."
+        ::= 103
+
+atmacctSwAPCommsFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, atmacctASAddressPri, atmacctASAddressSec,
+                        atmacctASControl, atmacctSwASCommsFailures }
+        DESCRIPTION
+                "Notification that switch to ATM Accounting Server
+                communication has failed and that a usage file transfer has
+                failed to complete."
+        ::= 104
+
+atmacctUsageRecCrFailed TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, atmacctUsageRecCrFailures }
+        DESCRIPTION
+                "Notification that an ATM usage record could not be created."
+        ::= 105
+
+atmacctLportStateChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, atmacctLportSvcControl, atmacctLportIfIndex,
+                    lportSlotId, lportPportId, lportId }
+        DESCRIPTION
+                "Notification that accounting has been enabled or disabled on a
+                particular logical port.  This trap is generated when the value of
+                the atmacctLportControl is modified for a particular port;
+                this trap IS NOT generated when the global atmacctControl is
+                modified or at switch boot."
+        ::= 106
+
+cvChanDs1AlarmStateChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, chanSlotId, chanPortId, chanId, cvStatusStr }
+        DESCRIPTION
+                "This trap indicates when the DS1 has changed its current
+                 alarm state."
+        ::= 107
+ 
+cvPportDs1ESFDatalinkStatusChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, cvESFLinkStatusStr }
+        DESCRIPTION
+                "This trap indicates that the status of the DS1 ESF Data Link 
+		(FDL) has changed."
+        ::= 108
+ 
+cvPportPerfMonTCA TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, cvPportPMTcaOid,
+                    nodeTrapSeverity, nodeTrapSequenceNumber, cvStatusStr }
+        DESCRIPTION
+                "This trap indicates that a threshold crossing was detected
+                 on the performance parameter identified by the threshold
+                 table OID given."
+        ::= 109
+ 
+cvCardTypeMismatch TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cardPhysicalSlotId, cvCardAdminTypeStr, cvCardOperTypeStr }
+        DESCRIPTION
+                "This trap indicates that the NMS view of the cardtype
+                 does not match the one from HW installation."
+        ::= 110
+
+cvNodeBulkSwAPCommsFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, nodeBulkStatsCollectorAddress, nodeBulkSwAPCommsFailures }
+        DESCRIPTION
+                "Notification that switch to ATM Bulk Statistics Adjunct
+                Processor communication has failed and that a data file
+                transfer has failed to complete."
+        ::= 111
+
+atmacctOperStateChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, atmacctControl, atmacctOperState }
+        DESCRIPTION
+                "Notification that the operational state of the ATM accounting
+                system on the switch has changed.  This trap is generated upon
+                entering the non-operational state due to critical failure of
+                communications to the ATM Accounting Server.  It is also
+                generated upon recovery of this critcal condition.
+
+                This trap is not generated upon change of the atmacctOperState
+                object in conjunction with an operator change of the
+                atmacctControl object."
+        ::= 112
+
+cvNodePsCStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvStatusStr }
+    DESCRIPTION
+        "This trap indicates that the power supply 3 has changed state
+        (toggled between up and down states)."
+    	::= 113
+
+
+cvNodePsMismatchTrap TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, nodeAdminStatus, nodeOperatingStatus }
+        DESCRIPTION
+                "THIS OID IS OBSOLETE. THIS CAN BE REUSED.
+                This trap indicates that there is a mismatch in the number of
+                power supplies as expected by the user and as actually found
+                in the switch."
+        ::= 114
+
+atmacctASCommsStateChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, atmacctASControl, atmacctASAddressPri,
+                        atmacctASAddressSec, atmacctASCommsState }
+        DESCRIPTION
+                "This trap indicates that the state of communcications to
+                the ATM Accounting Server has changed."
+        ::= 115
+
+cvCktMultipntAtmStatusChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cktLeafSrcIfIndex, cktLeafAtmVPI, cktLeafAtmVCI,
+                     cktLeafEndpointIndex, cvCktLeafOperStatus,
+                     cvCktLeafFailReason, cktLeafFailNode, cktLeafFailPort }
+        DESCRIPTION
+                "This trap indicates that the point-to-multipoint ATM PVC
+                 state has been changed."
+        ::= 116
+
+nodeTimeOfDayInvalid TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName }
+        DESCRIPTION
+        "Notification that the time-of-day clock on the switch is
+        invalid or has not been configured.  This trap is generated
+        only at CP or SP boot-time."
+        ::= 117
+
+pportAPSswitchingEvent TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, pportAPSprotectionLineState }
+        DESCRIPTION
+        "This trap indicates that a protection switching event has
+        just taken place and the protection line is now in the
+        indicated state."
+        ::= 118
+ 
+pportAPSworkingLineRestored TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "This trap indicates that the specified working line
+                pport has resumed carrying user traffic.  This may be
+                due to an auto switch condition that has cleared or
+                due to a problem detected on the protection line."
+        ::= 119
+ 
+pportAPSmodeMismatch TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "This trap indicates that a mode mismatch has been
+                detected based on this pport's APS configuration and
+                the received K2 byte.  This happens when one LTE is
+                configured for 1+1 APS and the other for 1:n APS.  The
+                LTE configured for 1:n will fall back to 1+1 mode."
+        ::= 120
+ 
+pportAPSprotectionLineFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "This trap indicates that the protection line is now
+                in a failed state.  APS switchover to protection is
+                now inhibited.  If the protection line was carrying
+                user traffic, it is switched back to the working line."
+        ::= 121
+ 
+pportAPSprotectionLineRestored TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "This trap indicates that the protection line is now
+                in an operational state.  APS switchover to protection
+                is now possible."
+        ::= 122
+ 
+pportAPSprotectionByteFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "This trap indicates that the protection line has declared
+                a protection byte failure.  This happens when a protection
+                byte defect or inconsistent K1 byte is received and the
+                condition persists for 2.5 seconds.  APS switchover to
+                protection is inhibited.  If the protection line was carrying
+                user traffic, it is switched back to the working line."
+        ::= 123
+
+pportAPSfarEndProtectionLineFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "This trap indicates that a far end protection line failure
+                has been declared. This happens when the received K1 byte
+                indicates SF on the protection line and the condition persists
+                for 2.5 seconds."
+        ::= 124
+ 
+pportAPSfarEndProtectionLineCleared TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "This trap indicates that the far end protection line failure
+                has cleared.  This happens after 10sec. without an indication
+                of SF on the protection line in the received K1 byte."
+        ::= 125
+ 
+pportAPSchannelMismatchFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId }
+        DESCRIPTION
+                "This trap indicates that a channel mismatch has been detected
+                between the channel indicated in the received K2 byte and the
+                channel indicated in the transmitted K1 byte.  Mismatch failures
+                do not apply to the 1+1 unidirectional case.  This trap may be
+                sent as part of the normal course of performing a switchover."
+        ::= 126
+ 
+pportAPSconfigStatusChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, pportAPSpairedSlotId,
+                        pportAPSpairedPportId, pportAPSconfigStatus }
+        DESCRIPTION
+                "This trap indicates that the APS configuration status has
+                changed.  When the pportAPSconfigStatus is indicated as invalid,
+                the user should check pportAPSadminDir, pportAPSlineType,
+                pportAPSrevertiveMode, and pportAPSwtrPeriod for a mismatched
+                configuration between the two pports."
+        ::= 127
+
+cvNodeNtpServerError TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvNodeNtpAddressStr }
+    DESCRIPTION
+        "This trap indicates the specified reference time server fails to
+         respond to an NTP time request and no other time servers are
+         available"
+    ::= 128
+ 
+cvNodeNtpTimeChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvNodeTimeStr, nodeNtpOffset }
+    DESCRIPTION
+        "This trap indicates that the time in the switch has been changed
+         by the specified milliseconds."
+    ::= 129
+
+fltsrvAlarmTrap TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, fltsrvSeverity, 
+			fltsrvComponentID, fltsrvAlarmText }
+        DESCRIPTION
+                "This trap is generated by the fault server when an alarm is
+                opened or closed."
+        ::= 130
+ 
+CVpportAPSdirectionModeMismatch TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId,
+                     nodeTrapSeverity, nodeTrapSequenceNumber }
+        DESCRIPTION
+                "This trap indicates that a direction mode mismatch has been
+                detected on the indicated pport (the indicated pport is an
+                APS protection line pport).  This happens when one LTE is
+                configured for Unidirectional and the other for Bidirectional
+                mode."
+        ::= 131
+
+cvFracctStateChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, fracctControl, 
+			nodeTrapSeverity, nodeTrapSequenceNumber }
+        DESCRIPTION
+                "Notification that FR accounting has been enabled or disabled
+                on the switch. This trap is generated at switch boot or when
+                the value of the fracctControl object is modified."
+        ::= 132
+
+cvFracctSwASCommsFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, fracctASAddressPri, fracctASAddressSec,
+                        fracctASControl, fracctSwASCommsFailures,
+                     nodeTrapSeverity, nodeTrapSequenceNumber }
+        DESCRIPTION
+                "Notification that switch to FR Accounting Server
+                communication has failed and that a usage file transfer has
+                failed to complete."
+        ::= 133
+ 
+cvFracctUsageRecCrFailed TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, fracctUsageRecCrFailures,
+                     nodeTrapSeverity, nodeTrapSequenceNumber }
+        DESCRIPTION
+                "Notification that an FR usage record could not be created."
+        ::= 134
+ 
+cvFracctLportStateChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, fracctLportSvcOrigControl, fracctLportSvcTermControl,
+                    fracctLportIfIndex, nodeTrapSeverity,
+                    nodeTrapSequenceNumber }
+        DESCRIPTION
+                "Notification that SVC accounting has been enabled or disabled on a
+                particular logical port.  This trap is generated the value of
+                the fracctLportControl is modified for a particular port;
+                this trap IS NOT generated when the global fracctControl is
+                modified or at switch boot."
+        ::= 135
+ 
+cvFracctOperStateChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, fracctControl, fracctOperState,
+                     nodeTrapSeverity, nodeTrapSequenceNumber }
+        DESCRIPTION
+                "Notification that the operational state of the FR accounting
+                system on the switch has changed.  This trap is generated upon
+                entering the non-operational state due to critical failure of
+                communications to the FR Accounting Server.  It is also
+                generated upon recovery of this critcal condition.
+ 
+                This trap is not generated upon change of the fracctOperState
+                object in conjunction with an operator change of the
+                fracctControl object."
+        ::= 136
+ 
+cvFracctASCommsStateChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, fracctASControl, fracctASAddressPri,
+                        fracctASAddressSec, fracctASCommsState,
+                     nodeTrapSeverity, nodeTrapSequenceNumber }
+        DESCRIPTION
+                "This trap indicates that the state of communcications to
+                the FR Accounting Server has changed."
+        ::= 137
+
+cvLportIlmiStatusChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName, lportIlmiOperStatus,
+                     nodeTrapSeverity, nodeTrapSequenceNumber }
+        DESCRIPTION
+                "Notification that the status of the ATM ILMI function
+                 has changed on the port."
+        ::= 138
+
+cvCktDlciOamStorm TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvLPortName, cvCircuitName }
+    DESCRIPTION
+        "This trap indicates that the oam speed on this frame
+         relay circuit has exceeded the threshold (set to
+         10 cells per 10ms or 1000cps)."
+    ::= 142
+
+cvCktAtmOamStorm TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvLPortName, cvCircuitName }
+    DESCRIPTION
+        "This trap indicates that the oam speed on this atm
+         circuit has exceeded the threshold (set to 10 cells per
+         10ms or 1000cps)."
+    ::= 143
+
+cvLportLCPOpen TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that PPP LCP has entered the OPEN state
+                 on the specified port."
+        ::= 148
+ 
+cvLportLCPCloseEchoRqstTimeout TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cvLPortName }
+        DESCRIPTION
+                "This trap indicates that PPP LCP has entered the CLOSED
+                 state on the specified port as the result of an Echo Request
+                 timeout."
+        ::= 149
+
+cvAcctServerStartup TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName }
+        DESCRIPTION
+                "This trap indicates that the Accounting Server is
+                now operational."
+        ::= 11001
+
+cvAcctServerShutdown TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName }
+        DESCRIPTION
+                "This trap indicates that the Accounting Server operations
+                have been shut-down."
+        ::= 11002
+
+cvDiskSpaceThresholdExceeded TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, diskDirectory, diskPercentageUsed,
+                     thresholdValue, thresholdSeverity }
+        DESCRIPTION
+                "This trap indicates the disk space threshold of the
+                indicated filesystem has been surpassed."
+        ::= 11003
+
+cvDiskStatusChanged TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, diskDirectory, diskSeverity, diskPercentageUsed }
+        DESCRIPTION
+                "This trap is sent when the disk space percentage used on
+                 a disk is no longer over the threshold value. The
+                 severity level reported in the trap corresponds to the
+                 threshold level that was exited."
+        ::= 11004
+
+cvSwitchNotInConfiguration TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName }
+        DESCRIPTION
+                "This trap is sent when the Accounting Server receives
+                data from a switch for which it is not configured to
+                process."
+        ::= 11005
+
+cvAmaFileTransferFailure TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName }
+        DESCRIPTION
+                "This trap is sent when the Accounting Server has failed
+                to transfer one or more accounting files to the Billing
+                Operations Server (BOS), i.e., the upstream system to which
+                formatted accounting data (e.g., Bellcore BAF records)
+                is transfered."
+        ::= 11006
+ 
+
+cvBundleStatusChange TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES { cvNodeName, cvLPortName, cvStatusStr, lportDataRate, lportVAvailBw, cvBundleName, cvTrunkName }
+    DESCRIPTION 
+        "This trap indicates that a ML Member trunk associated with the
+        indicated logical port has changed state. The MLFR LPort to which it is bound, the Trunk Name
+	and Aggregate and Operational BWs are displayed."
+    ::= 139 
+
+cvCardATMTCA TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, cardPhysicalSlotId, cvReasonStr }
+        DESCRIPTION
+                "This trap indicates that a threshold crossing was detected
+                 on the ATM TCA identified by the threshold
+                 table ID given, along with the slot number"
+        ::= 144
+
+cvPportATMTCA TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, pportSlotId, pportId, cvReasonStr }
+        DESCRIPTION
+                "This trap indicates that a threshold crossing was detected
+                 on the lport ATM TCA identified by the threshold
+                 table ID given, along with the slot and pport number"
+        ::= 145
+
+cvCktAtmOamStormCleared TRAP-TYPE
+    ENTERPRISE cascview
+    VARIABLES  { cvNodeName, cvLPortName, cvCircuitName }
+    DESCRIPTION
+                "This trap indicates that the OAM cell rate on this ATM
+                 circuit has dropped down to acceptable levels after having
+                 previously exceeded the threshold (set to 10 cells per
+                 10ms or 1000cps)."
+    ::= 151
+
+cvSubcardStatusChange TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cardLogicalSlotId, subcardPhysicalSubSlotId,
+                     subcardOperType, subcardOperStatus,
+                     nodeTrapSeverity, nodeTrapSequenceNumber }
+        DESCRIPTION
+                "This trap indicates that a subcard has transitioned
+                to the state indicated by subcardOperStatus."
+        ::= 152
+
+cvSubcardSwitchover TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES  { cvNodeName, cardLogicalSlotId, subcardPhysicalSubSlotId,
+                     subcardOperType,
+                     nodeTrapSeverity, nodeTrapSequenceNumber }
+        DESCRIPTION
+                "This trap indicates that a subcard has switched over
+                to the redundant subcard.  The subcardPhysicalSublotId is
+                now the active subcard in the redundant configuration"
+        ::= 153
+
+cvAtmacctASwitchOver TRAP-TYPE
+	ENTERPRISE cascview
+	VARIABLES { atmacctASAddress, nodeTrapSeverity, nodeTrapSequenceNumber}
+	DESCRIPTION
+		"This trap is generated when the switch automatically changes
+		 the Accounter Server it is sending Atm billing data as a
+		 result of a communication failure with the current
+		 Accounting Server."
+	::= 154
+
+cvFracctASwitchOver  TRAP-TYPE
+	ENTERPRISE cascview
+	VARIABLES { fracctASAddress, nodeTrapSeverity, nodeTrapSequenceNumber }
+	DESCRIPTION
+		"This trap is generated when the switch automatically changes
+		 the Accounter Server it is sending Frame Relay billing data 
+		 as a result of a communication failure with the 
+		 current Accounting Server."
+	::= 155
+
+cvNodeRapidUpgradeInitiated TRAP-TYPE
+	ENTERPRISE cascview
+	VARIABLES { cvNodeName, nodeTrapSeverity, nodeTrapSequenceNumber }
+	DESCRIPTION
+		"This trap indicates that a rapid upgrade has begun on this node."
+	::= 177
+
+cvCardRapidUpgradeComplete TRAP-TYPE
+	ENTERPRISE cascview
+	VARIABLES {  cvNodeName, cardPhysicalSlotId , nodeTrapSeverity, nodeTrapSequenceNumber }
+	DESCRIPTION
+		"This trap indicates that a rapid upgrade has completed successfully on
+		the card."
+	::= 178
+
+cvCardRapidUpgradeFailed TRAP-TYPE
+	ENTERPRISE cascview
+	VARIABLES { cvNodename, cardPhysicalSlotId, cardRapidUpgradeFailReason, nodeTrapSeverity, nodeTrapSequenceNumber }
+	DESCRIPTION
+		"This trap indicates that a rapid upgrade has failed on this card."
+	::= 179
+
+cvChanPMTCA TRAP-TYPE
+        ENTERPRISE cascview
+        VARIABLES { cvNodeName, chanSlotId, chanPortId, chanId, cvReasonStr }
+        DESCRIPTION
+                "This trap indicates that a threshold crossing was detected
+                 on the performance parameter identified by the threshold
+                 table ID given, along with the slot, pport and channel number"
+        ::= 183
+ 
+
+END

@@ -1,0 +1,2712 @@
+-- MIB created 2/05/97 18:21:03, by
+--   SMIC (the next generation) version 1.6.29, November 22, 1994.
+
+DS3SUPPMIB DEFINITIONS ::= BEGIN
+
+-- From file: "cascadeds3.mib2"
+-- Compile options "K U M"
+
+IMPORTS
+    Gauge32
+            FROM SNMPv2-SMI-v1
+    OBJECT-TYPE
+            FROM RFC-1212
+    TruthValue
+            FROM SNMPv2-TC-v1
+    InterfaceIndex, ifIndex
+            FROM IF-MIB
+    cascadepm
+            FROM CASCADE-MIB;
+
+ds3SuppMIB OBJECT IDENTIFIER ::= { cascadepm 2 }
+-- MODULE-IDENTITY
+--  LastUpdated
+--    9610170552Z
+--  OrgName
+--    Cascade Communications Corporation
+--  ContactInfo
+--            Cascade Communications Corporation
+--    
+--     Postal: Cascade Communications Corporation
+--             5 Carlise Road
+--             Westfard, MA 01886
+--     Tel:    +1 508 692 2600
+--     E-mail: support@casc.com
+--     WEB:    http://www.casc.com
+--  Descr
+--    The MIB module that describes DS3 and E3 interfaces
+--    supplemental objects.  This document supplements RFC 1407
+--    and DS3/E3 Draft MIB rfcTBD [14].  This MIB is optional
+--    and provides management support for ANSI T1.231-1993 and
+--    RFC 1695.   noSuchObject will be returned if no data is
+--    available.
+--    
+--    The objects defined in this MIB module were identified by
+--    examining ANSI T1.231-1993 and identifying functionality
+--    that was not specified in the standard DS3-MIB.  In
+--    addition, the Bellcore GR-820-CORE document was consulted,
+--    specifically to determine the conformance statements.
+--    
+--    
+--    Also defined in this MIB module are objects defined by ATM
+--    MIB rfc1695, Bellcore TR-TSV-000773, Bellcore
+--    TR-NWT-001112, and ANSI T1E1.2/94-002R1 specifications.
+--    
+--    Implementing this MIB is optional in a managed device that
+--    has these types of interfaces because of the additional
+--    processing and storage capabilities that are required.
+--    The management functions described in this memo are
+--    particularly appropriate for 'mediation devices'
+--    associated with managed device.  (See ANSI T1.231-1993.)
+
+dsx3ConfigTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Dsx3ConfigEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "This table contains additional configuration objects for a
+        DS3 interface."
+    ::= { ds3SuppMIB 1 }
+
+dsx3ConfigEntry OBJECT-TYPE
+    SYNTAX Dsx3ConfigEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Configuration objects for a particular DS3 interface. This
+        entry augments, or extends, the dsx3ConfigEntry defined in
+        the DS3-MIB."
+    INDEX { ifIndex }
+    ::= { dsx3ConfigTable 1 }
+
+Dsx3ConfigEntry ::= SEQUENCE {
+    dsx3ConfigIndex InterfaceIndex,
+    dsx3DayTimeElapsed INTEGER,
+    dsx3ValidDayIntervals INTEGER,
+    dsx3EnableAllTCAs TruthValue,
+    dsx3PLCPAlarmState INTEGER,
+    dsx3TCAlarmState INTEGER,
+    dsx3AICSignal INTEGER,
+    dsx3IdleSignal INTEGER,
+    dsx3PLCPStatus INTEGER,
+    dsx3TCStatus INTEGER,
+    dsx3FEBE INTEGER,
+    dsx3FEAC INTEGER,
+    dsx3EnableFEACLpbk TruthValue,
+    dsx3FEACCode INTEGER,
+    dsx3AlarmFailureTime INTEGER,
+    dsx3AlarmClearTime INTEGER
+    }
+
+dsx3ConfigIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+--    Rsyntax Integer32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This object is the identifier of a DS3/E3 Interface on a
+        managed device.  If there is an ifEntry that is directly
+        associated with this and only this DS3/E3 interface, it
+        should have the same value as ifIndex.  Otherwise, number
+        the dsx3LineIndices with an unique identifier following
+        the rules of choosing a number that is greater than
+        ifNumber and numbering the inside interfaces (e.g.,
+        equipment side) with even numbers and outside interfaces
+        (e.g, network side) with odd numbers."
+    ::= { dsx3ConfigEntry 1 }
+
+dsx3DayTimeElapsed OBJECT-TYPE
+    SYNTAX INTEGER(0..899)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The number of seconds that have elapsed since the beginning
+        of the near end day error measurement period."
+    ::= { dsx3ConfigEntry 2 }
+
+dsx3ValidDayIntervals OBJECT-TYPE
+    SYNTAX INTEGER(0..3)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The number of previous near end Day intervals for which
+        valid data was collected.  The value will be 3 unless the
+        interface was brought online within the last 3 days, in
+        which case the value will be the number of complete 1 day
+        near end intervals since the interface has been online.
+        In the case where the agent is a proxy, it is possible
+        that some intervals are unavailable.  In this case, this
+        interval is the maximum interval number for which valid
+        data is available."
+    ::= { dsx3ConfigEntry 3 }
+
+dsx3EnableAllTCAs OBJECT-TYPE
+    SYNTAX TruthValue
+--    Rsyntax INTEGER {
+--        true(1),
+--        false(2)
+--        }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "This object is used to enable or disable the sending of
+        Threshold Crossing Alerts (TCAs) for the all the threshold
+        on an interface.  By default, agents should initialize this
+        object to 'false(2)'"
+    DEFVAL { false }
+    ::= { dsx3ConfigEntry 4 }
+
+dsx3PLCPAlarmState OBJECT-TYPE
+    SYNTAX INTEGER(0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "This object is show current PLCP alarm state."
+    ::= { dsx3ConfigEntry 5 }
+
+dsx3TCAlarmState OBJECT-TYPE
+    SYNTAX INTEGER(0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "This object is show current TC alarm state."
+    ::= { dsx3ConfigEntry 6 }
+
+dsx3IdleSignal OBJECT-TYPE
+    SYNTAX INTEGER {
+        dsx3NoIdle(1),
+        dsx3ReceivingIdle(2)
+        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This object indicates the presence Idle signal being
+        received by this DS3 interface."
+    ::= { dsx3ConfigEntry 7 }
+
+dsx3AICSignal OBJECT-TYPE
+    SYNTAX INTEGER {
+        dsx3CbitParity(1),
+        dsx3M23orSYNTRAN(2)
+        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This object indicates the presence of C-bit application
+        or M23/SYNTRAN application based on the AIC signal being
+        received by this DS3 interface."
+    ::= { dsx3ConfigEntry 8 }
+
+dsx3PLCPStatus OBJECT-TYPE
+    SYNTAX INTEGER {
+        dsx3NoPLCPStatus(1),
+        dsx3ReceivingLOF(2),
+        dsx3ReceivingYEL(4),
+        dsx3ReceivingAIS(8),
+        dsx3ReceivingFEBE(16)
+        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This object indicates the PLCP Status being received by
+        this DS3 interface."
+    ::= { dsx3ConfigEntry 9 }
+
+dsx3TCStatus OBJECT-TYPE
+    SYNTAX INTEGER {
+        dsx3NoTCStatus(1),
+        dsx3ReceivingOCD(2),
+        dsx3ReceivingLCD(4)
+        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This object indicates the presence FEBE being received by
+        this DS3 interface."
+    ::= { dsx3ConfigEntry 10 }
+
+dsx3FEBE OBJECT-TYPE
+    SYNTAX INTEGER {
+        dsx3NoFEBE(1),
+        dsx3ReceivingFEBE(2)
+        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This object indicates the presence FEBE being received by
+        this DS3 interface."
+    ::= { dsx3ConfigEntry 11 }
+
+dsx3FEAC OBJECT-TYPE
+    SYNTAX INTEGER {
+        dsx3NoFEAC(1),
+        dsx3DS3EquipmentFailure(2),
+        dsx3DS3LOS(4),
+        dsx3DS3OutofFrame(8),
+        dsx3DS3AISreceived(16),
+        dsx3DS3IDLEreceived(32),
+        dsx3DS3NonServiceAffectingEquipFailure(64),
+        dsx3CommonEquipmentFailure(128),
+        dsx3DS3LoopbackReceived(256),
+        dsx3DS1ServiceAffectingEquipmentFailure(512),
+        dsx3DS1NonServiceAffectingEquipFailure(1024),
+        dsx3SingleDS1LOS(2048),
+        dsx3MultipleDS1sLOS(4096)
+        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This object indicates the presence FEAC being received by
+        this DS3 interface.  Non zero INTEGER indicating the
+        current DS3 FEAC status."
+    ::= { dsx3ConfigEntry 12 }
+
+dsx3EnableFEACLpbk OBJECT-TYPE
+    SYNTAX TruthValue
+--    Rsyntax INTEGER {
+--        true(1),
+--        false(2)
+--        }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "This object is used to enable or disable the processing
+        of FEAC Line Loopback Activate/Deactivate requests on an
+        
+        
+        interface.  By default, agents should initialize this
+        object to 'true(1)'"
+    DEFVAL { true }
+    ::= { dsx3ConfigEntry 13 }
+
+dsx3FEACCode OBJECT-TYPE
+    SYNTAX INTEGER(0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "This object specifies the FEAC Codeword values to be used
+        to
+        be transmit received by this DS3 interface.  Non zero
+        INTEGER
+        indicating the current DS3 FEAC Signal Code."
+    ::= { dsx3ConfigEntry 14 }
+
+dsx3AlarmFailureTime OBJECT-TYPE
+    SYNTAX INTEGER(0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The amount of time a defect persists on a DS3 interface
+        before declaring failure for all alarms.  The value is
+        specificed in milliseconds."
+    DEFVAL { 2500 }
+    ::= { dsx3ConfigEntry 15 }
+
+dsx3AlarmClearTime OBJECT-TYPE
+    SYNTAX INTEGER(0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The amount of time a defect does not persists on a DS3
+        interface before clearing failure for all alarms.  The value
+        is specificed in milliseconds."
+    DEFVAL { 10000 }
+    ::= { dsx3ConfigEntry 16 }
+
+dsx3CurrentTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Dsx3CurrentEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "The DS3/E3 current table contains various statistics
+        being collected for the current 15 minute interval."
+    ::= { ds3SuppMIB 2 }
+
+dsx3CurrentEntry OBJECT-TYPE
+    SYNTAX Dsx3CurrentEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "An entry in the DS3/E3 Current table."
+    INDEX { dsx3CurrentIndex }
+    ::= { dsx3CurrentTable 1 }
+
+Dsx3CurrentEntry ::= SEQUENCE {
+    dsx3CurrentIndex InterfaceIndex,
+    dsx3CurrentValidData TruthValue,
+    dsx3CurrentLESAs Gauge32,
+    dsx3CurrentLESBs Gauge32,
+    dsx3CurrentLSESs Gauge32,
+    dsx3CurrentLLOSSs Gauge32,
+    dsx3CurrentPESAPs Gauge32,
+    dsx3CurrentPESBPs Gauge32,
+    dsx3CurrentPESACPs Gauge32,
+    dsx3CurrentPESBCPs Gauge32,
+    dsx3CurrentPAISSs Gauge32,
+    dsx3CurrentPUASCPs Gauge32,
+    dsx3CurrentPFCs Gauge32,
+    dsx3CurrentOCDs Gauge32,
+    dsx3CurrentOCDESs Gauge32,
+    dsx3CurrentLCDs Gauge32,
+    dsx3CurrentLCDESs Gauge32,
+    dsx3CurrentPLCPBIPs Gauge32,
+    dsx3CurrentPLCPLOFs Gauge32,
+    dsx3CurrentPLCPLOFESs Gauge32,
+    dsx3CurrentPLCPYELs Gauge32,
+    dsx3CurrentPLCPYELESs Gauge32,
+    dsx3CurrentPLCPCVs Gauge32,
+    dsx3CurrentPLCPESs Gauge32,
+    dsx3CurrentPLCPSESs Gauge32,
+    dsx3CurrentPLCPSEFs Gauge32,
+    dsx3CurrentPLCPUASs Gauge32,
+    dsx3CurrentPLCPFEBEs Gauge32,
+    dsx3CurrentPLCPFEBEESs Gauge32,
+    dsx3CurrentFEBEs Gauge32,
+    dsx3CurrentPFEValidData TruthValue,
+    dsx3CurrentPFEESACPs Gauge32,
+    dsx3CurrentPFEESBCPs Gauge32,
+    dsx3CurrentPFESASCPs Gauge32,
+    dsx3CurrentPFEFCCPs Gauge32
+    }
+
+dsx3CurrentIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+--    Rsyntax Integer32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies the DS3/E3
+        interface to which this entry is applicable.  The
+        interface identified by a particular value of this index
+        is the same interface as identified by the same value an
+        dsx3LineIndex object instance."
+    ::= { dsx3CurrentEntry 1 }
+
+dsx3CurrentValidData OBJECT-TYPE
+    SYNTAX TruthValue
+--    Rsyntax INTEGER {
+--        true(1),
+--        false(2)
+--        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This variable indicates if there is valid data
+        for the current table."
+    ::= { dsx3CurrentEntry 2 }
+
+dsx3CurrentLESAs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESA-L
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 3 }
+
+dsx3CurrentLESBs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESB-L
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 4 }
+
+dsx3CurrentLSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SES-L
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 5 }
+
+dsx3CurrentLLOSSs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LOSS-L
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 6 }
+
+dsx3CurrentPESAPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESAP-P
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 7 }
+
+dsx3CurrentPESBPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBP-P
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 8 }
+
+dsx3CurrentPESACPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESACP-P
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 9 }
+
+dsx3CurrentPESBCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBCP-P
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 10 }
+
+dsx3CurrentPAISSs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of AISS-P
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 11 }
+
+dsx3CurrentPUASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of UASCP-P
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 12 }
+
+dsx3CurrentPFCs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FC-P
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 13 }
+
+dsx3CurrentOCDs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of OCD encountered
+        by a DS3 interface in the current 15 minute interval."
+    ::= { dsx3CurrentEntry 14 }
+
+dsx3CurrentOCDESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of OCD-ES
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 15 }
+
+dsx3CurrentLCDs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LCD encountered
+        by a DS3 interface in the current 15 minute interval."
+    ::= { dsx3CurrentEntry 16 }
+
+dsx3CurrentLCDESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LCD-ES
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 17 }
+
+dsx3CurrentPLCPBIPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-BIP
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 18 }
+
+dsx3CurrentPLCPLOFs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-LOF
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 19 }
+
+dsx3CurrentPLCPLOFESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-LOF-ES
+         encountered by a DS3 interface in the current 15 minute
+         interval."
+    ::= { dsx3CurrentEntry 20 }
+
+dsx3CurrentPLCPYELs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-YEL
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 21 }
+
+dsx3CurrentPLCPYELESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-YEL-ES
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 22 }
+
+dsx3CurrentPLCPCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-CV
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 23 }
+
+dsx3CurrentPLCPESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-ES
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 24 }
+
+dsx3CurrentPLCPSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-SES
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 25 }
+
+dsx3CurrentPLCPSEFs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-SEF
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 26 }
+
+dsx3CurrentPLCPUASs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-UAS
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 27 }
+
+dsx3CurrentPLCPFEBEs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-FEBE
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 28 }
+
+dsx3CurrentPLCPFEBEESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-FEBE-ES
+        
+        
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 29 }
+
+dsx3CurrentFEBEs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FEBE
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 30 }
+
+dsx3CurrentPFEValidData OBJECT-TYPE
+    SYNTAX TruthValue
+--    Rsyntax INTEGER {
+--        true(1),
+--        false(2)
+--        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This variable indicates if there is valid data for
+        the current table's Far End objects."
+    ::= { dsx3CurrentEntry 31 }
+
+dsx3CurrentPFEESACPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESACP-PFE
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 32 }
+
+dsx3CurrentPFEESBCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBCP-PFE
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 33 }
+
+dsx3CurrentPFESASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SASCP-PFE
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 34 }
+
+dsx3CurrentPFEFCCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FCCP-PFE
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    ::= { dsx3CurrentEntry 35 }
+
+dsx3IntervalTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Dsx3IntervalEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "The DS3/E3 Interval Table contains various statistics
+        collected by each DS3/E3 Interface over the previous 24
+        hours of operation.  The past 24 hours are broken into 96
+        completed 15 minute intervals."
+    ::= { ds3SuppMIB 3 }
+
+dsx3IntervalEntry OBJECT-TYPE
+    SYNTAX Dsx3IntervalEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "An entry in the DS3/E3 Interval table."
+    INDEX { dsx3IntervalIndex, dsx3IntervalNumber }
+    ::= { dsx3IntervalTable 1 }
+
+Dsx3IntervalEntry ::= SEQUENCE {
+    dsx3IntervalIndex InterfaceIndex,
+    dsx3IntervalNumber INTEGER,
+    dsx3IntervalValidData TruthValue,
+    dsx3IntervalLESAs Gauge32,
+    dsx3IntervalLESBs Gauge32,
+    dsx3IntervalLLOSSs Gauge32,
+    dsx3IntervalLSESs Gauge32,
+    dsx3IntervalPESAPs Gauge32,
+    dsx3IntervalPESBPs Gauge32,
+    dsx3IntervalPESACPs Gauge32,
+    dsx3IntervalPESBCPs Gauge32,
+    dsx3IntervalPAISSs Gauge32,
+    dsx3IntervalPUASCPs Gauge32,
+    dsx3IntervalPFCs Gauge32,
+    dsx3IntervalOCDs Gauge32,
+    dsx3IntervalOCDESs Gauge32,
+    dsx3IntervalLCDs Gauge32,
+    dsx3IntervalLCDESs Gauge32,
+    dsx3IntervalPLCPBIPs Gauge32,
+    dsx3IntervalPLCPLOFs Gauge32,
+    dsx3IntervalPLCPLOFESs Gauge32,
+    dsx3IntervalPLCPYELs Gauge32,
+    dsx3IntervalPLCPYELESs Gauge32,
+    dsx3IntervalPLCPCVs Gauge32,
+    dsx3IntervalPLCPESs Gauge32,
+    dsx3IntervalPLCPSESs Gauge32,
+    dsx3IntervalPLCPSEFs Gauge32,
+    dsx3IntervalPLCPUASs Gauge32,
+    dsx3IntervalPLCPFEBEs Gauge32,
+    dsx3IntervalPLCPFEBEESs Gauge32,
+    dsx3IntervalFEBEs Gauge32,
+    dsx3IntervalPFEValidData TruthValue,
+    dsx3IntervalPFEESACPs Gauge32,
+    dsx3IntervalPFEESBCPs Gauge32,
+    dsx3IntervalPFESASCPs Gauge32,
+    dsx3IntervalPFEFCCPs Gauge32
+    }
+
+dsx3IntervalIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+--    Rsyntax Integer32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies the DS3/E3
+        interface to which this entry is applicable.  The
+        interface identified by a particular value of this index
+        is the same interface as identified by the same value an
+        dsx3LineIndex object instance."
+    ::= { dsx3IntervalEntry 1 }
+
+dsx3IntervalNumber OBJECT-TYPE
+    SYNTAX INTEGER(1..96)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "A number between 1 and 96, where 1 is the most recently
+        completed 15 minute interval and 96 is the 15 minutes
+        interval completed 23 hours and 45 minutes prior to
+        interval 1."
+    ::= { dsx3IntervalEntry 2 }
+
+dsx3IntervalValidData OBJECT-TYPE
+    SYNTAX TruthValue
+--    Rsyntax INTEGER {
+--        true(1),
+--        false(2)
+--        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This variable indicates if there is valid data for
+        the interval table."
+    ::= { dsx3IntervalEntry 3 }
+
+dsx3IntervalLESAs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESA-L
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 4 }
+
+dsx3IntervalLESBs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESB-L
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 5 }
+
+dsx3IntervalLLOSSs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LOSS-L
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 6 }
+
+dsx3IntervalLSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SES-L
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 7 }
+
+dsx3IntervalPESAPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESAP-P
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 8 }
+
+dsx3IntervalPESBPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBP-P
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 9 }
+
+dsx3IntervalPESACPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESACP-P
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 10 }
+
+dsx3IntervalPESBCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBCP-P
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 11 }
+
+dsx3IntervalPAISSs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of AISS-P
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 12 }
+
+dsx3IntervalPUASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of UASCP-P
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 13 }
+
+dsx3IntervalPFCs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FC-P
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 14 }
+
+dsx3IntervalOCDs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of OCD
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 15 }
+
+dsx3IntervalOCDESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of OCD-ES
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 16 }
+
+dsx3IntervalLCDs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LCD
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 17 }
+
+dsx3IntervalLCDESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LCD-ES
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 18 }
+
+dsx3IntervalPLCPBIPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-BIP
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 19 }
+
+dsx3IntervalPLCPLOFs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-LOF
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 20 }
+
+dsx3IntervalPLCPLOFESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-LOF-ES
+        
+        
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 21 }
+
+dsx3IntervalPLCPYELs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of
+        PLCP-YEL encountered by a DS3 interface in the individual
+        15 minute interval."
+    ::= { dsx3IntervalEntry 22 }
+
+dsx3IntervalPLCPYELESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-YEL-ES
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 23 }
+
+dsx3IntervalPLCPCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-CV
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 24 }
+
+dsx3IntervalPLCPESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-ES
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 25 }
+
+dsx3IntervalPLCPSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-SES
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 26 }
+
+dsx3IntervalPLCPSEFs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-SEF
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 27 }
+
+dsx3IntervalPLCPUASs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-UAS
+         encountered by a DS3 interface in the individual 15 minute
+         interval."
+    ::= { dsx3IntervalEntry 28 }
+
+dsx3IntervalPLCPFEBEs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-FEBE
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 29 }
+
+dsx3IntervalPLCPFEBEESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-FEBE-ES
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 30 }
+
+dsx3IntervalFEBEs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FEBEs
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 31 }
+
+dsx3IntervalPFEValidData OBJECT-TYPE
+    SYNTAX TruthValue
+--    Rsyntax INTEGER {
+--        true(1),
+--        false(2)
+--        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This variable indicates if there is valid data for the
+        interval table's Far End objects."
+    ::= { dsx3IntervalEntry 32 }
+
+dsx3IntervalPFEESACPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESACP-PFE
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 33 }
+
+dsx3IntervalPFEESBCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBCP-PFE
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 34 }
+
+dsx3IntervalPFESASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SASCP-PFE
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 35 }
+
+dsx3IntervalPFEFCCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FCCP-PFE
+        encountered by a DS3 interface in the individual 15 minute
+        interval."
+    ::= { dsx3IntervalEntry 36 }
+
+dsx3TotalTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Dsx3TotalEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "The DS3/E3 Total Table contains the cumulative sum of the
+        various statistics for the 24 hour period preceding the
+        current interval."
+    ::= { ds3SuppMIB 4 }
+
+dsx3TotalEntry OBJECT-TYPE
+    SYNTAX Dsx3TotalEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "An entry in the DS3/E3 Total table."
+    INDEX { dsx3TotalIndex }
+    ::= { dsx3TotalTable 1 }
+
+Dsx3TotalEntry ::= SEQUENCE {
+    dsx3TotalIndex InterfaceIndex,
+    dsx3TotalValidData TruthValue,
+    dsx3TotalLESAs Gauge32,
+    dsx3TotalLESBs Gauge32,
+    dsx3TotalLLOSSs Gauge32,
+    dsx3TotalLSESs Gauge32,
+    dsx3TotalPESAPs Gauge32,
+    dsx3TotalPESBPs Gauge32,
+    dsx3TotalPESACPs Gauge32,
+    dsx3TotalPESBCPs Gauge32,
+    dsx3TotalPAISSs Gauge32,
+    dsx3TotalPUASCPs Gauge32,
+    dsx3TotalPFCs Gauge32,
+    dsx3TotalOCDs Gauge32,
+    dsx3TotalOCDESs Gauge32,
+    dsx3TotalLCDs Gauge32,
+    dsx3TotalLCDESs Gauge32,
+    dsx3TotalPLCPBIPs Gauge32,
+    dsx3TotalPLCPLOFs Gauge32,
+    dsx3TotalPLCPLOFESs Gauge32,
+    dsx3TotalPLCPYELs Gauge32,
+    dsx3TotalPLCPYELESs Gauge32,
+    dsx3TotalPLCPCVs Gauge32,
+    dsx3TotalPLCPESs Gauge32,
+    dsx3TotalPLCPSESs Gauge32,
+    dsx3TotalPLCPSEFs Gauge32,
+    dsx3TotalPLCPUASs Gauge32,
+    dsx3TotalPLCPFEBEs Gauge32,
+    dsx3TotalPLCPFEBEESs Gauge32,
+    dsx3TotalFEBEs Gauge32,
+    dsx3TotalPFEValidData TruthValue,
+    dsx3TotalPFEESACPs Gauge32,
+    dsx3TotalPFEESBCPs Gauge32,
+    dsx3TotalPFESASCPs Gauge32,
+    dsx3TotalPFEFCCPs Gauge32
+    }
+
+dsx3TotalIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+--    Rsyntax Integer32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies the DS3/E3
+        interface to which this entry is applicable.  The
+        interface identified by a particular value of this index
+        is the same interface as identified by the same value an
+        dsx3LineIndex object instance."
+    ::= { dsx3TotalEntry 1 }
+
+dsx3TotalValidData OBJECT-TYPE
+    SYNTAX TruthValue
+--    Rsyntax INTEGER {
+--        true(1),
+--        false(2)
+--        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This variable indicates if there is valid data for the
+        Total table."
+    ::= { dsx3TotalEntry 2 }
+
+dsx3TotalLESAs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESA-L
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 3 }
+
+dsx3TotalLESBs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESB-L
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 4 }
+
+dsx3TotalLLOSSs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LOSS-L
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 5 }
+
+dsx3TotalLSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SES-L
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 6 }
+
+dsx3TotalPESAPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESAP-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 7 }
+
+dsx3TotalPESBPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBP-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 8 }
+
+dsx3TotalPESACPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESACP-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 9 }
+
+dsx3TotalPESBCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBCP-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 10 }
+
+dsx3TotalPAISSs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of AISS-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 11 }
+
+dsx3TotalPUASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of UASCP-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 12 }
+
+dsx3TotalPFCs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FC-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 13 }
+
+dsx3TotalOCDs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of OCD encountered
+        by a DS3 interface in the individual 24 hour interval."
+    ::= { dsx3TotalEntry 14 }
+
+dsx3TotalOCDESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of OCD-ES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 15 }
+
+dsx3TotalLCDs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LCD encountered
+        by a DS3 interface in the interval 24 hour Total."
+    ::= { dsx3TotalEntry 16 }
+
+dsx3TotalLCDESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LCD-ES
+        encountered by a DS3 interface in the interval 24 hour
+        Total."
+    ::= { dsx3TotalEntry 17 }
+
+dsx3TotalPLCPBIPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-BIP
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 18 }
+
+dsx3TotalPLCPLOFs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-LOF
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 19 }
+
+dsx3TotalPLCPLOFESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-LOF-ES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 20 }
+
+dsx3TotalPLCPYELs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-YEL
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 21 }
+
+dsx3TotalPLCPYELESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-YEL-ES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 22 }
+
+dsx3TotalPLCPCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-CV
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 23 }
+
+dsx3TotalPLCPESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-ES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 24 }
+
+dsx3TotalPLCPSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-SES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 25 }
+
+dsx3TotalPLCPSEFs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-SEF
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 26 }
+
+dsx3TotalPLCPUASs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-UAS
+        
+        
+         encountered by a DS3 interface in the individual 24 hour
+         interval."
+    ::= { dsx3TotalEntry 27 }
+
+dsx3TotalPLCPFEBEs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-FEBE
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 28 }
+
+dsx3TotalPLCPFEBEESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-FEBE-ES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 29 }
+
+dsx3TotalFEBEs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FEBEs
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 30 }
+
+dsx3TotalPFEValidData OBJECT-TYPE
+    SYNTAX TruthValue
+--    Rsyntax INTEGER {
+--        true(1),
+--        false(2)
+--        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This variable indicates if there is valid data for the
+        Total table's Far End objects."
+    ::= { dsx3TotalEntry 31 }
+
+dsx3TotalPFEESACPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESACP-PFE
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 32 }
+
+dsx3TotalPFEESBCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBCP-PFE
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 33 }
+
+dsx3TotalPFESASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of UASCP-PFE
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 34 }
+
+dsx3TotalPFEFCCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FCCP-PFE
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3TotalEntry 35 }
+
+dsx3DayIntervalTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Dsx3DayIntervalEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "A table of up to 3 days DS3 statistic totals for each
+        interface. These totals record up to three days (current,
+        recent, and previous) worth of cummulative statistics.
+        
+        
+        Invalid 15 minute intervals count as 0."
+    ::= { ds3SuppMIB 5 }
+
+dsx3DayIntervalEntry OBJECT-TYPE
+    SYNTAX Dsx3DayIntervalEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "One recent day's worth of DS3 statistic totals for an
+        interface."
+    INDEX { dsx3DayIntervalIndex, dsx3DayIntervalNumber }
+    ::= { dsx3DayIntervalTable 1 }
+
+Dsx3DayIntervalEntry ::= SEQUENCE {
+    dsx3DayIntervalIndex InterfaceIndex,
+    dsx3DayIntervalNumber INTEGER,
+    dsx3DayIntervalValidData TruthValue,
+    dsx3DayIntervalPESs Gauge32,
+    dsx3DayIntervalPSESs Gauge32,
+    dsx3DayIntervalSEFSs Gauge32,
+    dsx3DayIntervalUASs Gauge32,
+    dsx3DayIntervalLCVs Gauge32,
+    dsx3DayIntervalPCVs Gauge32,
+    dsx3DayIntervalLESs Gauge32,
+    dsx3DayIntervalCCVs Gauge32,
+    dsx3DayIntervalCESs Gauge32,
+    dsx3DayIntervalCSESs Gauge32,
+    dsx3DayIntervalLESAs Gauge32,
+    dsx3DayIntervalLESBs Gauge32,
+    dsx3DayIntervalLLOSSs Gauge32,
+    dsx3DayIntervalLSESs Gauge32,
+    dsx3DayIntervalPESAPs Gauge32,
+    dsx3DayIntervalPESBPs Gauge32,
+    dsx3DayIntervalPESACPs Gauge32,
+    dsx3DayIntervalPESBCPs Gauge32,
+    dsx3DayIntervalPAISSs Gauge32,
+    dsx3DayIntervalPUASCPs Gauge32,
+    dsx3DayIntervalPFCs Gauge32,
+    dsx3DayIntervalOCDs Gauge32,
+    dsx3DayIntervalOCDESs Gauge32,
+    dsx3DayIntervalLCDs Gauge32,
+    dsx3DayIntervalLCDESs Gauge32,
+    dsx3DayIntervalPLCPBIPs Gauge32,
+    dsx3DayIntervalPLCPLOFs Gauge32,
+    dsx3DayIntervalPLCPLOFESs Gauge32,
+    dsx3DayIntervalPLCPYELs Gauge32,
+    dsx3DayIntervalPLCPYELESs Gauge32,
+    dsx3DayIntervalPLCPCVs Gauge32,
+    dsx3DayIntervalPLCPESs Gauge32,
+    dsx3DayIntervalPLCPSEFs Gauge32,
+    dsx3DayIntervalPLCPSESs Gauge32,
+    dsx3DayIntervalPLCPUASs Gauge32,
+    dsx3DayIntervalPLCPFEBEs Gauge32,
+    dsx3DayIntervalPLCPFEBEESs Gauge32,
+    dsx3DayIntervalFEBEs Gauge32,
+    dsx3DayIntervalPFECESs Gauge32,
+    dsx3DayIntervalPFECSESs Gauge32,
+    dsx3DayIntervalPFECCVs Gauge32,
+    dsx3DayIntervalPFEUASs Gauge32,
+    dsx3DayIntervalPFEValidData TruthValue,
+    dsx3DayIntervalPFEESACPs Gauge32,
+    dsx3DayIntervalPFEESBCPs Gauge32,
+    dsx3DayIntervalPFESASCPs Gauge32,
+    dsx3DayIntervalPFEFCCPs Gauge32
+    }
+
+dsx3DayIntervalIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+--    Rsyntax Integer32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies the DS3/E3
+        interface to which this entry is applicable.  The
+        interface identified by a particular value of this index
+        is the same interface as identified by the same value an
+        dsx3LineIndex object instance."
+    ::= { dsx3DayIntervalEntry 1 }
+
+dsx3DayIntervalNumber OBJECT-TYPE
+    SYNTAX INTEGER(1..3)
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "A number between 1 and 3, where 1 is the most recently
+        completed 24 hour interval and 3 is the 24 hour interval
+        completed 48 hours prior to interval 1.  These totals
+        record up to three days (current, recent, and previous)
+        worth of cummulative statistics."
+    ::= { dsx3DayIntervalEntry 2 }
+
+dsx3DayIntervalValidData OBJECT-TYPE
+    SYNTAX TruthValue
+--    Rsyntax INTEGER {
+--        true(1),
+--        false(2)
+--        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This object indicates if there is valid data for this
+        
+        
+         day interval."
+    DEFVAL { true }
+    ::= { dsx3DayIntervalEntry 3 }
+
+dsx3DayIntervalPESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESP-P P-bit
+        Errored Seconds, encountered by a DS3 interface in the
+        individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 4 }
+
+dsx3DayIntervalPSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SESP-P P-bit
+        Severely Errored Seconds, encountered by a DS3 interface
+        in the individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 5 }
+
+dsx3DayIntervalSEFSs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SAS-P Severely
+        Errored Framing Seconds, encountered by a DS3/E3 interface
+        in the individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 6 }
+
+dsx3DayIntervalUASs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of UASP-P
+        Unavailable Seconds, encountered by a DS3 interface in the
+        individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 7 }
+
+dsx3DayIntervalLCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of CV-L Line
+        Coding Violations encountered by a DS3/E3 interface in the
+        individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 8 }
+
+dsx3DayIntervalPCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of CV-P P-bit
+        Coding Violations, encountered by a DS3 interface in the
+        individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 9 }
+
+dsx3DayIntervalLESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ES-L Line
+        Errored Seconds (BPVs or illegal zero sequences)
+        encountered by a DS3/E3 interface in the individual 24
+        hour interval."
+    ::= { dsx3DayIntervalEntry 10 }
+
+dsx3DayIntervalCCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of CVCP-P C-bit
+        Coding Violations encountered by a DS3 interface in the
+        individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 11 }
+
+dsx3DayIntervalCESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESCP-P C-bit
+        Errored Seconds encountered by a DS3 interface in the
+        individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 12 }
+
+dsx3DayIntervalCSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SESCP-P C-bit
+        Severely Errored Seconds encountered by a DS3 interface in
+        the individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 13 }
+
+dsx3DayIntervalLESAs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESA-L
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 14 }
+
+dsx3DayIntervalLESBs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESB-L
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 15 }
+
+dsx3DayIntervalLLOSSs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LOSS-L
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 16 }
+
+dsx3DayIntervalLSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SES-L
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 17 }
+
+dsx3DayIntervalPESAPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESAP-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 18 }
+
+dsx3DayIntervalPESBPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBP-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 19 }
+
+dsx3DayIntervalPESACPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESACP-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 20 }
+
+dsx3DayIntervalPESBCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBCP-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 21 }
+
+dsx3DayIntervalPAISSs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of AISS-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 22 }
+
+dsx3DayIntervalPUASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of UASCP-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 23 }
+
+dsx3DayIntervalPFCs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FC-P
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 24 }
+
+dsx3DayIntervalOCDs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of OCD encountered
+        by a DS3 interface in the individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 25 }
+
+dsx3DayIntervalOCDESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of OCD-ES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 26 }
+
+dsx3DayIntervalLCDESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LCD-ES
+        encountered by a DS3 interface in the interval 24 hour
+        
+        
+        interval."
+    ::= { dsx3DayIntervalEntry 27 }
+
+dsx3DayIntervalLCDs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of LCD encountered
+        by a DS3 interface in the interval 24 hour interval."
+    ::= { dsx3DayIntervalEntry 28 }
+
+dsx3DayIntervalPLCPBIPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-BIP
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 29 }
+
+dsx3DayIntervalPLCPLOFs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-LOF
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 30 }
+
+dsx3DayIntervalPLCPLOFESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-LOF-ES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 31 }
+
+dsx3DayIntervalPLCPYELs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-YEL
+        
+        
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 32 }
+
+dsx3DayIntervalPLCPYELESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of
+        PLCP-YEL-ES encountered by a DS3 interface in the
+        individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 33 }
+
+dsx3DayIntervalPLCPCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-CV
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 34 }
+
+dsx3DayIntervalPLCPESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-ES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 35 }
+
+dsx3DayIntervalPLCPSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-SES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 36 }
+
+dsx3DayIntervalPLCPSEFs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-SEF
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 37 }
+
+dsx3DayIntervalPLCPUASs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-UAS
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 38 }
+
+dsx3DayIntervalPLCPFEBEs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-FEBE
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 39 }
+
+dsx3DayIntervalPLCPFEBEESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of PLCP-FEBE-ES
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 40 }
+
+dsx3DayIntervalFEBEs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FEBEs
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 41 }
+
+dsx3DayIntervalPFECESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESCP-PFE C-bit
+        Errored Seconds encountered by a DS3 interface in the
+        individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 42 }
+
+dsx3DayIntervalPFECSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SESCP-PFE C-bit
+        Severely Errored Seconds encountered by a DS3 interface in
+        the individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 43 }
+
+dsx3DayIntervalPFECCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of CVCP-PFE C-bit
+        Coding Violations encountered by a DS3 interface in the
+        individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 44 }
+
+dsx3DayIntervalPFEUASs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of UASCP-PFE
+        Unavailable Seconds, encountered by a DS3 interface in the
+        individual 24 hour interval."
+    ::= { dsx3DayIntervalEntry 45 }
+
+dsx3DayIntervalPFEValidData OBJECT-TYPE
+    SYNTAX TruthValue
+--    Rsyntax INTEGER {
+--        true(1),
+--        false(2)
+--        }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This variable indicates if there is valid data for the
+        Day Interval table's Far End objects."
+    DEFVAL { true }
+    ::= { dsx3DayIntervalEntry 46 }
+
+dsx3DayIntervalPFEESACPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESACP-PFE
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 47 }
+
+dsx3DayIntervalPFEESBCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of ESBCP-PFE
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 48 }
+
+dsx3DayIntervalPFESASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of SASCP-PFE
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 49 }
+
+dsx3DayIntervalPFEFCCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The counter associated with the number of FCCP-PFE
+        encountered by a DS3 interface in the individual 24 hour
+        interval."
+    ::= { dsx3DayIntervalEntry 50 }
+
+dsx3CurrentThresholdTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Dsx3CurrentThresholdEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Thresholds on parameters for the current 15 minute
+        interval per interface."
+    ::= { ds3SuppMIB 6 }
+
+dsx3CurrentThresholdEntry OBJECT-TYPE
+    SYNTAX Dsx3CurrentThresholdEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Thresholds for the current 15 minute interval for a
+        particular interface. If thesholding is not supported on a
+        particular parameter, the error 'noSuchObject' should be
+        returned."
+    INDEX { dsx3CurrentThresholdIndex }
+    ::= { dsx3CurrentThresholdTable 1 }
+
+Dsx3CurrentThresholdEntry ::= SEQUENCE {
+    dsx3CurrentThresholdIndex InterfaceIndex,
+    dsx3CurrentThresholdLCVs Gauge32,
+    dsx3CurrentThresholdLESs Gauge32,
+    dsx3CurrentThresholdLSESs Gauge32,
+    dsx3CurrentThresholdPCVs Gauge32,
+    dsx3CurrentThresholdPESs Gauge32,
+    dsx3CurrentThresholdPSESs Gauge32,
+    dsx3CurrentThresholdPSASs Gauge32,
+    dsx3CurrentThresholdPUASs Gauge32,
+    dsx3CurrentThresholdPCVCPs Gauge32,
+    dsx3CurrentThresholdPESCPs Gauge32,
+    dsx3CurrentThresholdPSESCPs Gauge32,
+    dsx3CurrentThresholdPSASCPs Gauge32,
+    dsx3CurrentThresholdPUASCPs Gauge32,
+    dsx3CurrentThresholdESxs Gauge32,
+    dsx3CurrentThresholdPFECVCPs Gauge32,
+    dsx3CurrentThresholdPFEESCPs Gauge32,
+    dsx3CurrentThresholdPFESESCPs Gauge32,
+    dsx3CurrentThresholdPFESASCPs Gauge32,
+    dsx3CurrentThresholdPFEUASCPs Gauge32
+    }
+
+dsx3CurrentThresholdIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+--    Rsyntax Integer32
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies the DS3/E3
+        
+        
+        interface to which this entry is applicable.  The
+        interface identified by a particular value of this index
+        is the same interface as identified by the same value an
+        dsx3LineIndex object instance."
+    ::= { dsx3CurrentThresholdEntry 1 }
+
+dsx3CurrentThresholdLCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Line Code Violations
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    DEFVAL { 13296 }
+    ::= { dsx3CurrentThresholdEntry 2 }
+
+dsx3CurrentThresholdLESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Line Errored Seconds
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    DEFVAL { 65 }
+    ::= { dsx3CurrentThresholdEntry 3 }
+
+dsx3CurrentThresholdLSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Line Severly Errored Seconds
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    DEFVAL { 10 }
+    ::= { dsx3CurrentThresholdEntry 4 }
+
+dsx3CurrentThresholdPCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Path Coding Violations
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    DEFVAL { 13296 }
+    ::= { dsx3CurrentThresholdEntry 5 }
+
+dsx3CurrentThresholdPESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Path Errored Seconds
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    DEFVAL { 65 }
+    ::= { dsx3CurrentThresholdEntry 6 }
+
+dsx3CurrentThresholdPSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Path Severely Errored
+        Seconds encountered by a DS3 interface in the current 15
+        minute interval."
+    DEFVAL { 10 }
+    ::= { dsx3CurrentThresholdEntry 7 }
+
+dsx3CurrentThresholdPSASs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Path Severely Errored
+        Framing/Alarm Indication Signal Seconds encountered by a
+        DS3 interface in the current 15 minute interval."
+    DEFVAL { 2 }
+    ::= { dsx3CurrentThresholdEntry 8 }
+
+dsx3CurrentThresholdPUASs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Path Unavailable Seconds
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    DEFVAL { 10 }
+    ::= { dsx3CurrentThresholdEntry 9 }
+
+dsx3CurrentThresholdPCVCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Coding
+        Violations encountered by a DS3 interface in the current
+        15 minute interval."
+    DEFVAL { 13296 }
+    ::= { dsx3CurrentThresholdEntry 10 }
+
+dsx3CurrentThresholdPESCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Errored
+        Seconds encountered by a DS3 interface in the current 15
+        minute interval."
+    DEFVAL { 65 }
+    ::= { dsx3CurrentThresholdEntry 11 }
+
+dsx3CurrentThresholdPSESCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Severely Errored
+        Seconds encountered by a DS3 interface in the current 15
+        minute interval."
+    DEFVAL { 10 }
+    ::= { dsx3CurrentThresholdEntry 12 }
+
+dsx3CurrentThresholdPSASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Severely Errored
+        Framing/Alarm Indication Signal Seconds encountered by a
+        DS3 interface in the current 15 minute interval."
+    DEFVAL { 2 }
+    ::= { dsx3CurrentThresholdEntry 13 }
+
+dsx3CurrentThresholdPUASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Unavailable
+        
+        
+        Seconds encountered by a DS3 interface in the current 15
+        minute interval."
+    DEFVAL { 10 }
+    ::= { dsx3CurrentThresholdEntry 14 }
+
+dsx3CurrentThresholdESxs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on x number of defects in Errored Seconds
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    DEFVAL { 44 }
+    ::= { dsx3CurrentThresholdEntry 15 }
+
+dsx3CurrentThresholdPFECVCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Far End Coding
+        Violations encountered by a DS3 interface in the current
+        15 minute interval."
+    DEFVAL { 13296 }
+    ::= { dsx3CurrentThresholdEntry 16 }
+
+dsx3CurrentThresholdPFEESCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Far End Errored
+        Seconds encountered by a DS3 interface in the current 15
+        minute interval."
+    DEFVAL { 65 }
+    ::= { dsx3CurrentThresholdEntry 17 }
+
+dsx3CurrentThresholdPFESESCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Far End Severely
+        Errored Seconds encountered by a DS3 interface in the
+        current 15 minute interval."
+    DEFVAL { 10 }
+    ::= { dsx3CurrentThresholdEntry 18 }
+
+dsx3CurrentThresholdPFESASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Far End Severely
+        Errored Framing/Alarm Indication Signal Seconds
+        encountered by a DS3 interface in the current 15 minute
+        interval."
+    DEFVAL { 2 }
+    ::= { dsx3CurrentThresholdEntry 19 }
+
+dsx3CurrentThresholdPFEUASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Far End
+        Unavailable Seconds encountered by a DS3 interface in the
+        current 15 minute interval."
+    DEFVAL { 10 }
+    ::= { dsx3CurrentThresholdEntry 20 }
+
+dsx3DayThresholdTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Dsx3DayThresholdEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Thresholds on parameters for the current 24 hour interval
+        per interface."
+    ::= { ds3SuppMIB 7 }
+
+dsx3DayThresholdEntry OBJECT-TYPE
+    SYNTAX Dsx3DayThresholdEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Thresholds on parameters for the current 24 hour interval
+        for a particular interface.  If thesholding is not
+        supported on a particular parameter, the error
+        'noSuchObject' should be returned."
+    INDEX { dsx3DayThresholdIndex }
+    ::= { dsx3DayThresholdTable 1 }
+
+Dsx3DayThresholdEntry ::= SEQUENCE {
+    dsx3DayThresholdIndex InterfaceIndex,
+    dsx3DayThresholdLCVs Gauge32,
+    dsx3DayThresholdLESs Gauge32,
+    dsx3DayThresholdLSESs Gauge32,
+    dsx3DayThresholdPCVs Gauge32,
+    dsx3DayThresholdPESs Gauge32,
+    dsx3DayThresholdPSESs Gauge32,
+    dsx3DayThresholdPSASs Gauge32,
+    dsx3DayThresholdPUASs Gauge32,
+    dsx3DayThresholdPCVCPs Gauge32,
+    dsx3DayThresholdPESCPs Gauge32,
+    dsx3DayThresholdPSESCPs Gauge32,
+    dsx3DayThresholdPSASCPs Gauge32,
+    dsx3DayThresholdPUASCPs Gauge32,
+    dsx3DayThresholdESxs Gauge32,
+    dsx3DayThresholdPFECVCPs Gauge32,
+    dsx3DayThresholdPFEESCPs Gauge32,
+    dsx3DayThresholdPFESESCPs Gauge32,
+    dsx3DayThresholdPFESASCPs Gauge32,
+    dsx3DayThresholdPFEUASCPs Gauge32
+    }
+
+dsx3DayThresholdIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+--    Rsyntax Integer32
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies the DS3/E3
+        interface to which this entry is applicable.  The
+        interface identified by a particular value of this index
+        is the same interface as identified by the same value an
+        dsx3LineIndex object instance."
+    ::= { dsx3DayThresholdEntry 1 }
+
+dsx3DayThresholdLCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Line Code Violations
+        encountered by a DS3 interface in the current 24 hour
+        interval."
+    DEFVAL { 132960 }
+    ::= { dsx3DayThresholdEntry 2 }
+
+dsx3DayThresholdLESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Line Errored Seconds
+        encountered by a DS3 interface in the current 24 hour
+        interval."
+    DEFVAL { 648 }
+    ::= { dsx3DayThresholdEntry 3 }
+
+dsx3DayThresholdLSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Line Severly Errored Seconds
+        encountered by a DS3 interface in the current 24 hour
+        interval."
+    DEFVAL { 100 }
+    ::= { dsx3DayThresholdEntry 4 }
+
+dsx3DayThresholdPCVs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Path Coding Violations
+        encountered by a DS3 interface in the current 24 hour
+        interval."
+    DEFVAL { 132960 }
+    ::= { dsx3DayThresholdEntry 5 }
+
+dsx3DayThresholdPESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Path Errored Seconds
+        encountered by a DS3 interface in the current 24 hour
+        interval."
+    DEFVAL { 648 }
+    ::= { dsx3DayThresholdEntry 6 }
+
+dsx3DayThresholdPSESs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Path Severely Errored
+        Seconds encountered by a DS3 interface in the current 24
+        hour interval."
+    DEFVAL { 100 }
+    ::= { dsx3DayThresholdEntry 7 }
+
+dsx3DayThresholdPSASs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Path Severely Errored
+        Framing/Alarm Indication Signal Seconds encountered by a
+        DS3 interface in the current 24 hour interval."
+    DEFVAL { 17 }
+    ::= { dsx3DayThresholdEntry 8 }
+
+dsx3DayThresholdPUASs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of Path Unavailable Seconds
+        encountered by a DS3 interface in the current 24 hour
+        interval."
+    DEFVAL { 10 }
+    ::= { dsx3DayThresholdEntry 9 }
+
+dsx3DayThresholdPCVCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Coding
+        Violations encountered by a DS3 interface in the current
+        24 hour interval."
+    DEFVAL { 132960 }
+    ::= { dsx3DayThresholdEntry 10 }
+
+dsx3DayThresholdPESCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Errored Seconds
+        encountered by a DS3 interface in the current 24 hour
+        interval."
+    DEFVAL { 648 }
+    ::= { dsx3DayThresholdEntry 11 }
+
+dsx3DayThresholdPSESCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Severely Errored
+        Seconds encountered by a DS3 interface in the current 24
+        hour interval."
+    DEFVAL { 100 }
+    ::= { dsx3DayThresholdEntry 12 }
+
+dsx3DayThresholdPSASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Severely Errored
+        Framing/Alarm Indication Signal Seconds encountered by a
+        DS3 interface in the current 24 hour interval."
+    DEFVAL { 17 }
+    ::= { dsx3DayThresholdEntry 13 }
+
+dsx3DayThresholdPUASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Unavailable
+        Seconds encountered by a DS3 interface in the current 24
+        hour interval."
+    DEFVAL { 10 }
+    ::= { dsx3DayThresholdEntry 14 }
+
+dsx3DayThresholdESxs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on x number of defects in Errored Seconds
+        encountered by a DS3 interface in the current 24 hour
+        interval."
+    DEFVAL { 44 }
+    ::= { dsx3DayThresholdEntry 15 }
+
+dsx3DayThresholdPFECVCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Far End Coding
+        Violations encountered by a DS3 interface in the current
+        24 hour interval."
+    DEFVAL { 132960 }
+    ::= { dsx3DayThresholdEntry 16 }
+
+dsx3DayThresholdPFEESCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Far End Errored
+        Seconds encountered by a DS3 interface in the current 24
+        hour interval."
+    DEFVAL { 648 }
+    ::= { dsx3DayThresholdEntry 17 }
+
+dsx3DayThresholdPFESESCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Far End Severely
+        Errored Seconds encountered by a DS3 interface in the
+        current 24 hour interval."
+    DEFVAL { 100 }
+    ::= { dsx3DayThresholdEntry 18 }
+
+dsx3DayThresholdPFESASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Far End Severely
+        Errored Framing/Alarm Indication Signal Seconds
+        encountered by a DS3 interface in the current 24 hour
+        interval."
+    DEFVAL { 17 }
+    ::= { dsx3DayThresholdEntry 19 }
+
+dsx3DayThresholdPFEUASCPs OBJECT-TYPE
+    SYNTAX Gauge32
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "A threshold on the number of CP-bit Path Far End
+        Unavailable Seconds encountered by a DS3 interface in the
+        current 24 hour interval."
+    DEFVAL { 10 }
+    ::= { dsx3DayThresholdEntry 20 }
+
+
+END
+

@@ -1,0 +1,29 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: mibdb - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\martinc\LOCALS~1\Temp\RSP31.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\sqlitesrc" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Fp"Debug/mibdb.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Documents and Settings\martinc\Desktop\Source\mibParse\mibdb\MibDb.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\martinc\LOCALS~1\Temp\RSP31.tmp" 
+Creating command line "link.exe -lib /nologo /out:"Debug\mibdb.lib"  ".\Debug\MibDb.obj" ".\Debug\SqliteConnection.obj" ".\Debug\SqliteException.obj" ".\Debug\SqliteRecordSet.obj" "
+<h3>Output Window</h3>
+Compiling...
+MibDb.cpp
+c:\documents and settings\martinc\desktop\source\mibparse\mibdb\mibdb.cpp(352) : warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+c:\documents and settings\martinc\desktop\source\mibparse\mibdb\mibdb.cpp(355) : warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+Creating library...
+
+
+
+<h3>Results</h3>
+mibdb.lib - 0 error(s), 2 warning(s)
+</pre>
+</body>
+</html>
