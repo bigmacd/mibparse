@@ -1,4 +1,3 @@
-#ifndef __ENUMNODE_H__
 #define __ENUMNODE_H__
 
 #ifdef _WIN32

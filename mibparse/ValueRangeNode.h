@@ -1,4 +1,3 @@
-#ifndef __VALUERANGENODE_H__
 #define __VALUERANGENODE_H__
 
 #ifdef _WIN32

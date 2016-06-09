@@ -1,4 +1,3 @@
-#include "MibNode.h"
 
 MibNode::MibNode()
         :mUsed(false),

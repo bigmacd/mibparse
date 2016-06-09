@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <iostream.h>
 #include <fstream.h>
 #include <string.h>

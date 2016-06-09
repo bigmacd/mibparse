@@ -1,4 +1,3 @@
-#pragma warning(disable: 4786)
 
 #ifndef __MIBTREE_H__
 #include "MibTree.h"

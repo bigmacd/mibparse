@@ -1,4 +1,3 @@
-#ifndef __MIBDB_H__
 #define __MIBDB_H__
 
 #include "SqliteConnection.h"

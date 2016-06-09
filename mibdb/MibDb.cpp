@@ -1,4 +1,3 @@
-#pragma warning(disable: 4786)
 
 #ifndef __MIBDB_H__
 #include "MibDb.h"

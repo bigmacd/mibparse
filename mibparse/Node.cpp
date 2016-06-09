@@ -1,4 +1,3 @@
-#include "Node.h"
 #include "stdlib.h"
 
 node* node::mFirstNode = NULL;

@@ -1,4 +1,3 @@
-#include "EnumNode.h"
 
 EnumNode::EnumNode()
         :mNext(NULL),

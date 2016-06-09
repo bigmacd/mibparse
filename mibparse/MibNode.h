@@ -1,4 +1,3 @@
-#ifndef __MIBNODE_H__
 #define __MIBNODE_H__
 
 #ifdef _WIN32

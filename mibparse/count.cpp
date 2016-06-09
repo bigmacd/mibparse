@@ -1,4 +1,3 @@
-#pragma warning(disable: 4786)
 
 #ifndef __MIBPARSER_H__
 #include "MibParser.h"
