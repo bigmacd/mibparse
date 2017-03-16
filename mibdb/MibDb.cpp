@@ -1,3 +1,4 @@
+#pragma warning(disable: 4786)
 
 #ifndef __MIBDB_H__
 #include "MibDb.h"
@@ -44,7 +45,8 @@ MibDb::MibDb(std::string dbName)
 
 MibDb::~MibDb()
 {
-  mConnection.Close(); 
+  if (connected == true)
+    mConnection.Close(); 
   connected = false;
 }
 
@@ -288,9 +290,29 @@ MibDb::InsertOid(string oid,
 bool               
 MibDb::FindNearestOid(string oid)
 {
-  //select * from Oids where instr("1.3.6.1.2.1.16.4.3.1.4.0.1.2.3", oid) 
-  //order by length(oid) desc limit 1;
-	return false;
+  bool retVal = false;
+  std::string sql;
+  char temp[512];
+  sprintf(temp, "select * from Oids where instr('%s', oid) order by length(oid) desc limit 1", oid.c_str());
+  sql = temp;
+
+  try {
+    mConnection.Execute(sql.c_str(), mRecordSet);
+    if (mRecordSet && !mRecordSet->IsEmpty())
+    {
+      mRecordSet->MoveFirst();
+      PopulateOidData();
+
+      // fix up mOidsName
+      mOidsName += oid.substr(strlen(mOid.c_str()));
+
+      retVal = true;
+    }      
+  }
+  catch (SqliteException e) {
+    mErrorString = e.GetErrDescription();
+  }
+  return retVal;
 }
 
 bool               
