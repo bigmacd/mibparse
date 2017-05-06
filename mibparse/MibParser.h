@@ -1,3 +1,4 @@
+#ifndef __MIBPARSER_H__
 #define __MIBPARSER_H__
 
 #ifndef __NODE_H__

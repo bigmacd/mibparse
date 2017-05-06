@@ -1,3 +1,4 @@
+char* knownoids[][2] =
 {
   { "ccitt",          "0", },
   { "recommendation", "0.0", },

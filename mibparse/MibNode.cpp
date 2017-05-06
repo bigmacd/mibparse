@@ -1,3 +1,6 @@
+#ifndef __MIBNODE_H__
+#include "MibNode.h"
+#endif
 
 MibNode::MibNode()
         :mUsed(false),

@@ -7,7 +7,6 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		debugMfc|Win32 = debugMfc|Win32
-		debug-mfc|Win32 = debug-mfc|Win32
 		Release|Win32 = Release|Win32
 		release-mfc|Win32 = release-mfc|Win32
 	EndGlobalSection
@@ -16,12 +15,10 @@ Global
 		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.Debug|Win32.Build.0 = Debug|Win32
 		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.debugMfc|Win32.ActiveCfg = debugMfc|Win32
 		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.debugMfc|Win32.Build.0 = debugMfc|Win32
-		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.debug-mfc|Win32.ActiveCfg = Release|Win32
-		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.debug-mfc|Win32.Build.0 = Release|Win32
 		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.Release|Win32.ActiveCfg = Release|Win32
 		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.Release|Win32.Build.0 = Release|Win32
-		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.release-mfc|Win32.ActiveCfg = Release|Win32
-		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.release-mfc|Win32.Build.0 = Release|Win32
+		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.release-mfc|Win32.ActiveCfg = release-mfc|Win32
+		{B30794EB-F78E-45A4-91C5-35BEF0933DF0}.release-mfc|Win32.Build.0 = release-mfc|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

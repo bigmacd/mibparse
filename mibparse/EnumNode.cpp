@@ -1,3 +1,6 @@
+#ifndef __ENUMNODE_H__
+#include "EnumNode.h"
+#endif
 
 EnumNode::EnumNode()
         :mNext(NULL),

@@ -1,3 +1,7 @@
+#ifndef __NODE_H__
+#include "Node.h"
+#endif
+
 #include "stdlib.h"
 
 node* node::mFirstNode = NULL;

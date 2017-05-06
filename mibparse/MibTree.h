@@ -1,3 +1,4 @@
+#ifndef __MIBTREE_H__
 #define __MIBTREE_H__
 
 #include "MibNode.h"

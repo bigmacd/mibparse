@@ -7,14 +7,17 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		debugMfc|Win32 = debugMfc|Win32
+		debug-mfc|Win32 = debug-mfc|Win32
 		Release|Win32 = Release|Win32
 		release-mfc|Win32 = release-mfc|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.Debug|Win32.ActiveCfg = debug-mfc|Win32
-		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.Debug|Win32.Build.0 = debug-mfc|Win32
+		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.Debug|Win32.Build.0 = Debug|Win32
 		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.debugMfc|Win32.ActiveCfg = debugMfc|Win32
 		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.debugMfc|Win32.Build.0 = debugMfc|Win32
+		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.debug-mfc|Win32.ActiveCfg = debug-mfc|Win32
+		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.debug-mfc|Win32.Build.0 = debug-mfc|Win32
 		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.Release|Win32.ActiveCfg = Release|Win32
 		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.Release|Win32.Build.0 = Release|Win32
 		{3D87F5A1-1C89-4EDC-A8B2-46367D137DD2}.release-mfc|Win32.ActiveCfg = release-mfc|Win32
